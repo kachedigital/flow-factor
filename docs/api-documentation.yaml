@@ -1,0 +1,276 @@
+openapi: 3.0.3
+info:
+  title: FlowFactor Web Accessibility Checker API
+  description: |
+    REST API for scanning websites and analyzing WCAG compliance issues.
+    This API scans provided URLs, follows redirects, and returns detailed accessibility reports.
+  version: 1.0.0
+  contact:
+    name: FlowFactor Support
+    url: https://flowfactor.io/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://flowfactor.vercel.app
+    description: Production server
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Accessibility
+    description: Website accessibility scanning operations
+
+paths:
+  /api/scan-web:
+    post:
+      tags:
+        - Accessibility
+      summary: Scan a website for accessibility issues
+      description: |
+        Analyzes a website URL for WCAG compliance issues. The API will:
+        - Normalize and validate the URL
+        - Follow up to 5 redirects automatically
+        - Parse HTML content using regex
+        - Check for 6 common accessibility issues
+        - Return AI-generated explanations and fix suggestions
+      operationId: scanWebsite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+                  description: The URL of the website to scan (with or without protocol)
+                  example: https://example.com
+                  minLength: 1
+            examples:
+              withProtocol:
+                summary: URL with protocol
+                value:
+                  url: https://example.com
+              withoutProtocol:
+                summary: URL without protocol (auto-adds https)
+                value:
+                  url: example.com
+              withPath:
+                summary: URL with path
+                value:
+                  url: https://example.com/about
+      responses:
+        '200':
+          description: Scan completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResult'
+              examples:
+                withIssues:
+                  summary: Scan with issues found
+                  value:
+                    scannedResource: https://example.com
+                    aiCoachSummary: This website has 3 critical accessibility issues that need immediate attention. The most important fixes are adding alt text to images and ensuring all form inputs have labels.
+                    issues:
+                      - id: missing-alt-text-1
+                        description: Image missing alternative text
+                        helpUrl: https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html
+                        severity: critical
+                        aiExplanation: Images without alt text are invisible to screen readers, preventing visually impaired users from understanding the image content.
+                        aiImpact: Users with visual impairments cannot understand what the image represents, leading to incomplete information and poor user experience.
+                        aiFixSuggestion: 'Add descriptive alt text to the image: <img src="logo.png" alt="Company Logo">'
+                        htmlElement: <img src="logo.png">
+                      - id: missing-form-label-1
+                        description: Form input missing label
+                        helpUrl: https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html
+                        severity: serious
+                        aiExplanation: Form inputs without labels make it difficult for screen reader users to understand what information is required.
+                        aiImpact: Users may not understand what to enter in the form field, leading to errors and frustration.
+                        aiFixSuggestion: 'Add a label element: <label for="email">Email Address</label><input id="email" type="email">'
+                        htmlElement: <input type="email">
+                    criticalCount: 2
+                    seriousCount: 1
+                    moderateCount: 0
+                    minorCount: 0
+                    totalIssues: 3
+                noIssues:
+                  summary: Scan with no issues
+                  value:
+                    scannedResource: https://accessible-site.com
+                    aiCoachSummary: Great job! This website follows accessibility best practices. No critical issues were found.
+                    issues: []
+                    criticalCount: 0
+                    seriousCount: 0
+                    moderateCount: 0
+                    minorCount: 0
+                    totalIssues: 0
+        '400':
+          description: Bad request - Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingUrl:
+                  summary: Missing URL
+                  value:
+                    message: URL is required
+                invalidUrl:
+                  summary: Invalid URL format
+                  value:
+                    message: Invalid URL format
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                timeout:
+                  summary: Connection timeout
+                  value:
+                    message: 'Failed to fetch website: Connection timeout after 15 seconds'
+                dnsError:
+                  summary: DNS resolution failed
+                  value:
+                    message: 'Failed to fetch website: DNS resolution failed for domain'
+                connectionRefused:
+                  summary: Connection refused
+                  value:
+                    message: 'Failed to fetch website: Connection refused by server'
+                sslError:
+                  summary: SSL certificate error
+                  value:
+                    message: 'Failed to fetch website: SSL certificate verification failed'
+                tooManyRedirects:
+                  summary: Too many redirects
+                  value:
+                    message: 'Failed to fetch website: Too many redirects (exceeded 5)'
+                notHtml:
+                  summary: Non-HTML response
+                  value:
+                    message: 'Failed to fetch website: Response is not HTML (Content-Type: application/pdf)'
+
+components:
+  schemas:
+    ScanResult:
+      type: object
+      required:
+        - scannedResource
+        - aiCoachSummary
+        - issues
+        - criticalCount
+        - seriousCount
+        - moderateCount
+        - minorCount
+        - totalIssues
+      properties:
+        scannedResource:
+          type: string
+          description: The actual URL that was scanned (after following redirects)
+          example: https://example.com
+        aiCoachSummary:
+          type: string
+          description: AI-generated summary of the scan results
+          example: This website has 3 critical accessibility issues that need immediate attention.
+        issues:
+          type: array
+          description: Array of accessibility issues found
+          items:
+            $ref: '#/components/schemas/AccessibilityIssue'
+        criticalCount:
+          type: integer
+          description: Number of critical severity issues
+          example: 2
+          minimum: 0
+        seriousCount:
+          type: integer
+          description: Number of serious severity issues
+          example: 1
+          minimum: 0
+        moderateCount:
+          type: integer
+          description: Number of moderate severity issues
+          example: 0
+          minimum: 0
+        minorCount:
+          type: integer
+          description: Number of minor severity issues
+          example: 0
+          minimum: 0
+        totalIssues:
+          type: integer
+          description: Total number of issues found
+          example: 3
+          minimum: 0
+
+    AccessibilityIssue:
+      type: object
+      required:
+        - id
+        - description
+        - helpUrl
+        - severity
+        - aiExplanation
+        - aiImpact
+        - aiFixSuggestion
+        - htmlElement
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the issue
+          example: missing-alt-text-1
+        description:
+          type: string
+          description: Brief description of the accessibility issue
+          example: Image missing alternative text
+        helpUrl:
+          type: string
+          format: uri
+          description: Link to WCAG documentation for this issue
+          example: https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html
+        severity:
+          type: string
+          enum: [critical, serious, moderate, minor]
+          description: Severity level of the issue
+          example: critical
+        aiExplanation:
+          type: string
+          description: AI-generated explanation of why this is an issue
+          example: Images without alt text are invisible to screen readers
+        aiImpact:
+          type: string
+          description: AI-generated description of user impact
+          example: Users with visual impairments cannot understand what the image represents
+        aiFixSuggestion:
+          type: string
+          description: AI-generated suggestion for fixing the issue
+          example: 'Add descriptive alt text: <img src="logo.png" alt="Company Logo">'
+        htmlElement:
+          type: string
+          description: The HTML element that has the issue
+          example: <img src="logo.png">
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: Failed to fetch website
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication (future enhancement)
+
+security: []

@@ -2,16 +2,14 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect } from "react"
-import { uploadFile, getFileUrl, supabase } from "@/lib/supabase"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Upload, File, X, Check, LogIn, UserIcon, LogOut } from "lucide-react"
+import { Upload, File, X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import LoginForm from "@/components/auth/login-form"
 
 interface FileUploadProps {
   bucket?: string
@@ -29,11 +27,6 @@ interface UploadedFile {
   uploadedAt: Date
 }
 
-interface CurrentUser {
-  id: string
-  email?: string
-}
-
 export function FileUpload({
   bucket = "pdf-documents",
   maxSize = 10,
@@ -46,81 +39,8 @@ export function FileUpload({
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [dragActive, setDragActive] = useState(false)
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [showLogin, setShowLogin] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
-
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        if (!supabase) {
-          console.error("Supabase client not available")
-          setLoading(false)
-          return
-        }
-
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser()
-
-        if (error) {
-          console.error("Auth check failed:", error)
-        } else {
-          setCurrentUser(user)
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error)
-        setCurrentUser(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkAuth()
-
-    // Listen for auth changes
-    if (supabase) {
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event, session) => {
-        setCurrentUser(session?.user ?? null)
-      })
-
-      return () => subscription.unsubscribe()
-    }
-  }, [])
-
-  const handleSignOut = async () => {
-    try {
-      if (!supabase) {
-        toast({
-          title: "Error",
-          description: "Authentication service not available",
-          variant: "destructive",
-        })
-        return
-      }
-
-      await supabase.auth.signOut()
-      setCurrentUser(null)
-      setFiles([])
-      setUploadedFiles([])
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully",
-      })
-    } catch (error) {
-      toast({
-        title: "Sign out failed",
-        description: "Failed to sign out",
-        variant: "destructive",
-      })
-    }
-  }
 
   const validateFile = (file: File | null): string | null => {
     if (!file) {
@@ -200,16 +120,6 @@ export function FileUpload({
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-
-    if (!currentUser) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to upload files",
-        variant: "destructive",
-      })
-      return
-    }
-
     handleFileSelect(e.dataTransfer.files)
   }
 
@@ -218,16 +128,6 @@ export function FileUpload({
   }
 
   const uploadFiles = async () => {
-    if (!currentUser) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to upload files",
-        variant: "destructive",
-      })
-      setShowLogin(true)
-      return
-    }
-
     if (files.length === 0) return
 
     setUploading(true)
@@ -239,14 +139,23 @@ export function FileUpload({
         return null
       }
 
-      const fileName = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name}`
-
       try {
-        const { data, error } = await uploadFile(bucket, fileName, file)
+        // Upload to Vercel Blob using the upload API
+        const formData = new FormData()
+        formData.append("file", file)
 
-        if (error) throw error
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        })
 
-        const url = getFileUrl(bucket, fileName)
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(`Upload failed: ${errorText}`)
+        }
+
+        const { url } = await response.json()
+
         const uploadedFile: UploadedFile = {
           name: file.name,
           url,
@@ -258,7 +167,7 @@ export function FileUpload({
         setUploadProgress((prev) => prev + 100 / files.length)
 
         if (onUploadComplete) {
-          onUploadComplete(url, fileName)
+          onUploadComplete(url, file.name)
         }
 
         return uploadedFile
@@ -280,11 +189,14 @@ export function FileUpload({
       setUploadedFiles((prev) => [...prev, ...successfulUploads])
       setFiles([])
 
-      toast({
-        title: "Upload complete",
-        description: `Successfully uploaded ${successfulUploads.length} file(s)`,
-      })
+      if (successfulUploads.length > 0) {
+        toast({
+          title: "Upload complete",
+          description: `Successfully uploaded ${successfulUploads.length} file(s)`,
+        })
+      }
     } catch (error) {
+      console.error("Upload batch error:", error)
       toast({
         title: "Upload failed",
         description: "Some files failed to upload",
@@ -304,67 +216,12 @@ export function FileUpload({
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
-  if (loading) {
-    return (
-      <Card className={cn("w-full", className)}>
-        <CardContent className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>Loading...</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!currentUser) {
-    return (
-      <Card className={cn("w-full", className)}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LogIn className="h-5 w-5" />
-            Authentication Required
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {showLogin ? (
-            <div className="space-y-4">
-              <LoginForm />
-              <Button variant="outline" onClick={() => setShowLogin(false)} className="w-full">
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <div className="text-center space-y-4">
-              <p className="text-muted-foreground">
-                Please sign in to upload files. Your files will be securely stored and only accessible to you.
-              </p>
-              <Button onClick={() => setShowLogin(true)} className="w-full">
-                <LogIn className="h-4 w-4 mr-2" />
-                Sign In to Upload Files
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card className={cn("w-full", className)}>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            File Upload
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <UserIcon className="h-4 w-4" />
-            <span className="text-muted-foreground">{currentUser.email || "User"}</span>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
+        <CardTitle className="flex items-center gap-2">
+          <Upload className="h-5 w-5" />
+          File Upload
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

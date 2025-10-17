@@ -5,12 +5,14 @@ export { createClient } from "@supabase/supabase-js"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
+console.log("[v0] Supabase URL available:", !!supabaseUrl)
+console.log("[v0] Supabase Anon Key available:", !!supabaseAnonKey)
+
 // Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase environment variables")
+  console.error("[v0] Missing Supabase environment variables")
 }
 
-// Create a single supabase client for interacting with your database
 export const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null
 
 // Server-side client (for API routes and server actions)
@@ -120,19 +122,59 @@ export async function deleteData(table: string, id: string) {
 
 // Storage helpers
 export async function uploadFile(bucket: string, path: string, file: File) {
-  if (!supabase) throw new Error("Supabase client not available")
-  if (!file) throw new Error("File is required")
-  if (!file.name) throw new Error("File must have a name")
-  if (typeof file.size !== "number") throw new Error("File must have a valid size")
+  console.log("[v0] uploadFile called with:", { bucket, path, fileName: file?.name, fileSize: file?.size })
 
-  const { data, error } = await supabase.storage.from(bucket).upload(path, file)
-  return { data, error }
+  if (!supabase) {
+    console.error("[v0] Supabase client not available - check environment variables")
+    throw new Error("Supabase client not available. Please check your environment variables.")
+  }
+
+  if (!file) {
+    console.error("[v0] File is required but not provided")
+    throw new Error("File is required")
+  }
+
+  if (!file.name) {
+    console.error("[v0] File must have a name")
+    throw new Error("File must have a name")
+  }
+
+  if (typeof file.size !== "number") {
+    console.error("[v0] File must have a valid size")
+    throw new Error("File must have a valid size")
+  }
+
+  console.log("[v0] Attempting to upload to bucket:", bucket)
+
+  try {
+    const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    })
+
+    if (error) {
+      console.error("[v0] Supabase upload error:", error)
+      throw error
+    }
+
+    console.log("[v0] Upload successful:", data)
+    return { data, error: null }
+  } catch (error) {
+    console.error("[v0] Upload exception:", error)
+    throw error
+  }
 }
 
 export async function getFileUrl(bucket: string, path: string) {
-  if (!supabase) throw new Error("Supabase client not available")
+  console.log("[v0] getFileUrl called with:", { bucket, path })
+
+  if (!supabase) {
+    console.error("[v0] Supabase client not available")
+    throw new Error("Supabase client not available")
+  }
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+  console.log("[v0] Generated public URL:", data.publicUrl)
   return data.publicUrl
 }
 

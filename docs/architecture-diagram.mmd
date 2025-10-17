@@ -1,0 +1,76 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#3b82f6','primaryTextColor':'#fff','primaryBorderColor':'#2563eb','lineColor':'#64748b','secondaryColor':'#8b5cf6','tertiaryColor':'#06b6d4'}}}%%
+
+graph TB
+    subgraph "Client Layer"
+        A[User Browser]
+        B[React Component<br/>web-accessibility-client.tsx]
+    end
+
+    subgraph "Next.js Application"
+        C[Form Input & Validation]
+        D[Fetch API Call<br/>POST /api/scan-web]
+    end
+
+    subgraph "API Layer - Node.js Runtime"
+        E[API Route Handler<br/>route.ts]
+        F[URL Normalization]
+        G[Redirect Handler<br/>Max 5 redirects]
+        H[HTML Fetcher<br/>15s timeout]
+    end
+
+    subgraph "Processing Layer"
+        I[Regex HTML Parser]
+        J[Accessibility Checks<br/>6 checks]
+        K[AI Explanation Generator]
+    end
+
+    subgraph "External Resources"
+        L[Target Website]
+        M[WCAG Documentation<br/>w3.org]
+    end
+
+    subgraph "Response Layer"
+        N[Format Response<br/>JSON]
+        O[Issue Categorization<br/>Critical/Serious/Moderate/Minor]
+        P[Results Display]
+    end
+
+    A |Enters URL| B
+    B |Submit Form| C
+    C |Validates| D
+    D |HTTP POST| E
+    E  F
+    F  G
+    G |Follow Redirects| H
+    H |Fetch HTML| L
+    L |Return HTML| H
+    H  I
+    I  J
+    J |6 Checks| K
+    K |Generate Explanations| N
+    N  O
+    O |Return JSON| D
+    D |Update State| P
+    P |Render| A
+    K -.->|Reference| M
+
+    classDef clientClass fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e40af
+    classDef apiClass fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#4338ca
+    classDef processClass fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#be185d
+    classDef externalClass fill:#ecfccb,stroke:#84cc16,stroke-width:2px,color:#4d7c0f
+    classDef responseClass fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#b45309
+
+    class A,B,C clientClass
+    class D,E,F,G,H apiClass
+    class I,J,K processClass
+    class L,M externalClass
+    class N,O,P responseClass
+
+    %% Add notes
+    note1[Note: All string concatenation<br/>uses + operator, no template literals]
+    note2[Note: Manual redirect handling<br/>for better error messages]
+    note3[Note: 6 WCAG Level A checks:<br/>1. Missing Alt Text<br/>2. Empty Links<br/>3. Missing Form Labels<br/>4. Low Heading Hierarchy<br/>5. Missing Page Title<br/>6. Missing Lang Attribute]
+
+    style note1 fill:#f0f9ff,stroke:#0284c7,stroke-width:1px,color:#075985
+    style note2 fill:#f0f9ff,stroke:#0284c7,stroke-width:1px,color:#075985
+    style note3 fill:#f0f9ff,stroke:#0284c7,stroke-width:1px,color:#075985
