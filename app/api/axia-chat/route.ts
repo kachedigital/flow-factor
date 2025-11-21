@@ -1,11 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
-import { createGroq } from "@ai-sdk/groq"
 import { getKnowledgeBasePDFs } from "@/lib/pdf-knowledge"
-
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-})
 
 const AXIA_SYSTEM_CONTEXT = `You are Axia, an expert web accessibility consultant and WCAG specialist.
 
@@ -27,6 +22,49 @@ Keep responses concise (2-4 paragraphs) but thorough. Use bullet points for list
 
 Be encouraging and constructive. Focus on practical solutions that can be implemented immediately.`
 
+const FALLBACK_RESPONSES: Record<string, string> = {
+  aria: `ARIA (Accessible Rich Internet Applications) labels provide additional context to assistive technologies like screen readers. Use ARIA labels when:
+
+• The visible text doesn't fully describe an element's purpose (e.g., icon-only buttons)
+• You need to provide additional context (aria-describedby)
+• Labeling form inputs where visible labels aren't possible
+• Creating custom interactive widgets
+
+Key ARIA attributes:
+- aria-label: Provides a label directly on the element
+- aria-labelledby: References another element's text as the label
+- aria-describedby: Provides additional descriptive text
+- aria-hidden: Hides decorative elements from screen readers
+
+Best practice: Always prefer visible text labels over ARIA when possible. ARIA should enhance, not replace, semantic HTML.`,
+
+  contrast: `Color contrast ensures text is readable for users with low vision or color blindness. WCAG requirements:
+
+• Level AA (minimum): 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt+ bold)
+• Level AAA (enhanced): 7:1 for normal text, 4.5:1 for large text
+
+Use tools like WebAIM's Contrast Checker or browser DevTools to verify. Consider:
+- Text on backgrounds (including images)
+- UI component states (hover, focus, active)
+- Meaningful graphics and icons
+
+Tip: Don't rely on color alone to convey information - use text, patterns, or icons alongside color.`,
+}
+
+function getFallbackResponse(message: string): string | null {
+  const lowerMessage = message.toLowerCase()
+
+  if (lowerMessage.includes("aria") && (lowerMessage.includes("label") || lowerMessage.includes("when"))) {
+    return FALLBACK_RESPONSES.aria
+  }
+
+  if (lowerMessage.includes("contrast") || lowerMessage.includes("color")) {
+    return FALLBACK_RESPONSES.contrast
+  }
+
+  return null
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Axia chat API called")
@@ -41,16 +79,17 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Fetching PDFs from knowledge base...")
     let contextText = ""
+    let pdfCount = 0
 
     try {
       const pdfs = await getKnowledgeBasePDFs()
-      console.log(`[v0] Found ${pdfs.length} knowledge base PDFs`)
+      pdfCount = pdfs.length
+      console.log(`[v0] Found ${pdfCount} knowledge base PDFs`)
 
       if (pdfs.length > 0) {
         contextText = "\n\nKNOWLEDGE BASE (PDF Documents):\n\n"
         for (const pdf of pdfs) {
           if (pdf.extracted_text) {
-            // Limit text to first 2000 chars per PDF to avoid token limits
             const textPreview = pdf.extracted_text.substring(0, 2000)
             contextText += `Document: ${pdf.filename}\n${textPreview}\n\n---\n\n`
           }
@@ -68,32 +107,61 @@ Provide a helpful, actionable answer. If relevant information is available in th
 
     console.log("[v0] Calling generateText with Groq...")
     console.log("[v0] Prompt length:", prompt.length)
+    console.log("[v0] Knowledge base PDFs loaded:", pdfCount)
 
     let text: string | undefined
     try {
       const result = await generateText({
-        model: groq("llama-3.3-70b-versatile"),
+        model: "groq/llama-3.3-70b-versatile",
         prompt: prompt,
         maxTokens: 1000,
         temperature: 0.7,
       })
+
       text = result.text
       console.log("[v0] generateText completed")
       console.log("[v0] Response text length:", text?.length || 0)
-      console.log("[v0] Full result object:", JSON.stringify(result, null, 2))
+
+      if (!text || text.trim().length === 0) {
+        console.log("[v0] Groq returned empty response, trying fallback...")
+        const fallback = getFallbackResponse(message)
+
+        if (fallback) {
+          console.log("[v0] Using fallback response")
+          return NextResponse.json({
+            response:
+              fallback +
+              "\n\n_Note: This is a cached response. The AI service returned an empty result. For more detailed answers, please ensure your knowledge base is populated and the Groq API is functioning properly._",
+          })
+        }
+
+        return NextResponse.json({
+          response: `I received your question about accessibility, but I'm currently unable to generate a detailed response. This could be due to:
+
+• The Groq API returning an empty response (possibly rate limited)
+• The knowledge base is empty (${pdfCount} PDFs loaded)
+
+To fix this:
+1. Run the migration script to load PDFs from your Blob storage into the database
+2. Verify your Groq API key is valid and has remaining credits
+3. Try rephrasing your question
+
+In the meantime, I recommend checking the WCAG documentation at w3.org/WAI for accessibility guidance.`,
+        })
+      }
     } catch (groqError) {
       console.error("[v0] Groq API error:", groqError)
-      return NextResponse.json({
-        response:
-          "I apologize, but I'm experiencing technical difficulties with my AI service. This could be due to API rate limits or connectivity issues. Please try again in a moment.",
-      })
-    }
 
-    if (!text || text.trim().length === 0) {
-      console.error("[v0] Empty response from Groq API")
+      const fallback = getFallbackResponse(message)
+      if (fallback) {
+        return NextResponse.json({
+          response: fallback + "\n\n_Note: This is a cached response due to an AI service error._",
+        })
+      }
+
       return NextResponse.json({
         response:
-          "I received your question but wasn't able to generate a complete response. The knowledge base shows 0 PDFs loaded. Please ensure the pdf_documents table is populated by running the migration script, then try again.",
+          "I apologize, but I'm experiencing technical difficulties with my AI service. This could be due to API rate limits or connectivity issues. Please try again in a moment, or check that your Groq API key is configured correctly.",
       })
     }
 
@@ -101,12 +169,11 @@ Provide a helpful, actionable answer. If relevant information is available in th
     return NextResponse.json({ response: text })
   } catch (error) {
     console.error("[v0] Axia chat error:", error)
-    console.error("[v0] Error details:", error instanceof Error ? error.message : String(error))
 
     return NextResponse.json(
       {
         response:
-          "I apologize, but I encountered an error. The knowledge base is currently empty (0 PDFs loaded). Please run the migration script to load your PDFs from the Blob storage into the database.",
+          "I apologize, but I encountered an unexpected error. Please ensure the pdf_documents table exists in your database and try again.",
       },
       { status: 200 },
     )
