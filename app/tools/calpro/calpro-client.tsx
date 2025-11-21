@@ -1,12 +1,11 @@
 "use client"
 
 import { Label } from "@/components/ui/label"
-
 import type React from "react"
-
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Textarea, Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import {
   Send,
   Loader2,

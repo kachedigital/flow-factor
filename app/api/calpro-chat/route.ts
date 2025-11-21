@@ -1,11 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { searchKnowledgeBase, formatSearchResults } from "@/lib/knowledge-search"
-import {
-  extractURLsFromMessage,
-  scrapeURL,
-  cacheScrapedContent,
-  determineRelevantURLs, // Import new function
-} from "@/lib/web-scraper"
+import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineRelevantURLs } from "@/lib/web-scraper"
+import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
 import { streamText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
@@ -25,28 +21,20 @@ const ollama = createOpenAI({
 
 export const maxDuration = 30
 
-const SYSTEM_CONTEXT = `You are an expert California State Procurement Strategy & Compliance Advisor specializing in Generative AI (GenAI) products. Your role is to provide authoritative, practical guidance on:
+const buildSystemContext = (knowledgeContext: string, urlContext: string, attachmentContext: string) => {
+  return `${calproSystemPrompt}
 
-**Core Expertise Areas:**
-1. California State Procurement Regulations: Knowledge of California Public Contract Code, State Administrative Manual (SAM), Department of General Services (DGS) policies, and California Department of Technology (CDT) guidelines
-2. GenAI-Specific Compliance: Data privacy (CCPA/CPRA), algorithmic transparency, bias mitigation, security requirements, and ethical AI use
-3. Vendor Evaluation: Assessment criteria for GenAI vendors including technical capabilities, security posture, compliance certifications, and financial stability
-4. RFP Development: Crafting comprehensive Requests for Proposals that address GenAI-specific requirements
-5. Risk Management: Identifying and mitigating risks specific to GenAI procurement including data sovereignty, model transparency, and vendor lock-in
+## Current Context
+You have access to a knowledge base containing California state procurement documents, policies, and guidelines. When answering questions, reference specific documents when available.
 
-Based on the knowledge base documents available, provide specific, actionable guidance grounded in regulations and best practices.`
+${knowledgeContext}${urlContext}${attachmentContext}
 
-async function fetchUrlContent(url: string): Promise<string> {
-  try {
-    const scraped = await scrapeURL(url)
-    if (scraped) {
-      await cacheScrapedContent(scraped)
-      return `**Source: ${scraped.title}**\n${scraped.url}\n\n${scraped.content.substring(0, 5000)}`
-    }
-    return `[Error fetching URL: ${url}]`
-  } catch (error) {
-    return `[Error fetching URL: ${url}]`
-  }
+Remember to:
+- Cite specific sources (SCM Vol II sections, Executive Orders, PCC sections, duty statements, job descriptions)
+- Provide actionable guidance with clear next steps
+- Highlight compliance requirements and potential risks
+- Treat the user as a colleague seeking expert advice
+- Always remind users to verify critical information with their department's legal/procurement teams`
 }
 
 export async function POST(req: NextRequest) {
@@ -137,7 +125,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (messages && modelProvider) {
-      const contextualPrompt = SYSTEM_CONTEXT + knowledgeContext + urlContext + attachmentContext
+      const contextualPrompt = buildSystemContext(knowledgeContext, urlContext, attachmentContext)
 
       let model
       if (modelProvider === "local") {
@@ -216,5 +204,18 @@ For GenAI procurement in California, key considerations include:
       },
       { status: 500 },
     )
+  }
+}
+
+async function fetchUrlContent(url: string): Promise<string> {
+  try {
+    const scraped = await scrapeURL(url)
+    if (scraped) {
+      await cacheScrapedContent(scraped)
+      return `**Source: ${scraped.title}**\n${scraped.url}\n\n${scraped.content.substring(0, 5000)}`
+    }
+    return `[Error fetching URL: ${url}]`
+  } catch (error) {
+    return `[Error fetching URL: ${url}]`
   }
 }
