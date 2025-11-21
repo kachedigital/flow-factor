@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { searchKnowledgeBase, formatSearchResults } from "@/lib/knowledge-search"
+import { extractURLsFromMessage, scrapeURL, cacheScrapedContent } from "@/lib/web-scraper"
 
 const SYSTEM_CONTEXT = `You are an expert California State Procurement Strategy & Compliance Advisor specializing in Generative AI (GenAI) products. Your role is to provide authoritative, practical guidance on:
 
@@ -22,9 +23,47 @@ export async function POST(req: NextRequest) {
 
     console.log("[v0] CalPro search query:", message)
 
+    const urls = extractURLsFromMessage(message)
+    const scrapedContent: string[] = []
+
+    if (urls.length > 0) {
+      console.log("[v0] Found California government URLs:", urls)
+
+      for (const url of urls) {
+        const scraped = await scrapeURL(url)
+        if (scraped) {
+          scrapedContent.push(`**Source: ${scraped.title}**\n${scraped.url}\n\n${scraped.content}`)
+
+          // Cache the content for future use
+          await cacheScrapedContent(scraped)
+        }
+      }
+    }
+
     const searchResults = await searchKnowledgeBase(message, "procurement")
 
     console.log("[v0] CalPro search results:", searchResults.length, "documents found")
+
+    if (scrapedContent.length > 0) {
+      const scrapedResponse = `I've analyzed the California government page(s) you provided:\n\n${scrapedContent.join("\n\n---\n\n")}`
+
+      if (searchResults.length > 0) {
+        const additionalContext = formatSearchResults(searchResults, message)
+        return NextResponse.json({
+          response:
+            scrapedResponse +
+            "\n\n**Additional context from knowledge base:**\n\n" +
+            additionalContext +
+            "\n\n**Note:** This content has been cached and will be available for future searches. Always verify critical compliance information with official California state sources.",
+        })
+      }
+
+      return NextResponse.json({
+        response:
+          scrapedResponse +
+          "\n\n**Note:** This content has been cached and will be available for future searches. Always verify critical compliance information with official California state sources.",
+      })
+    }
 
     if (searchResults.length === 0) {
       return NextResponse.json({
@@ -39,7 +78,7 @@ For GenAI procurement in California, key considerations include:
 • Vendor evaluation criteria including financial stability and technical capabilities
 • Contract terms covering SLAs, data rights, and IP ownership
 
-**To get more specific guidance:** Upload California procurement policy documents to the knowledge base with the "procurement" category, or visit /api/migrate-procurement-pdfs to load procurement-specific PDFs.`,
+**To get more specific guidance:** Upload California procurement policy documents to the knowledge base with the "procurement" category, visit /api/migrate-procurement-pdfs to load procurement-specific PDFs, or share a California government URL (ca.gov) for me to analyze.`,
       })
     }
 

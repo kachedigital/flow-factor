@@ -13,7 +13,7 @@ const SUGGESTED_PROMPTS = [
   "What are the key compliance requirements for GenAI procurement in California?",
   "How do I evaluate GenAI vendors for state contracts?",
   "What are the data privacy considerations for GenAI products?",
-  "Help me draft an RFP for a GenAI solution",
+  "Analyze this CA.gov procurement policy: [paste URL]",
 ]
 
 interface Message {
@@ -161,7 +161,7 @@ export function CalProClient() {
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about procurement strategy, compliance, or GenAI best practices..."
+            placeholder="Ask about procurement strategy, compliance, GenAI best practices, or paste a California government URL..."
             className="min-h-[60px] resize-none"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -183,7 +183,10 @@ export function CalProClient() {
 
         <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
           <AlertCircle className="w-3 h-3" />
-          <span>This is an AI assistant. Always verify critical compliance information with official sources.</span>
+          <span>
+            This is an AI assistant. Paste California government URLs (ca.gov) for analysis. Always verify critical
+            information with official sources.
+          </span>
         </div>
       </Card>
     </div>
