@@ -31,7 +31,7 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Check if table exists
-    const { data: tableCheck, error: tableError } = await supabase.from("pdf_documents").select("*").limit(1)
+    const { error: tableError } = await supabase.from("pdf_documents").select("*").limit(1)
 
     if (tableError) {
       return NextResponse.json(
@@ -69,17 +69,9 @@ export async function GET() {
     for (const blob of pdfBlobs) {
       const filename = blob.pathname.split("/").pop() || blob.pathname
 
-      // Check if already exists
-      const { data: existing } = await supabase.from("pdf_documents").select("id").eq("blob_url", blob.url).single()
-
-      if (existing) {
-        skipCount++
-        results.push({ filename, status: "skipped", reason: "already exists" })
-        continue
-      }
-
       try {
         // Extract text from PDF
+        console.log(`[v0] Processing: ${filename}`)
         const extractedText = await extractTextFromPDF(blob.url)
 
         // Insert into database
@@ -92,8 +84,14 @@ export async function GET() {
         })
 
         if (error) {
-          errorCount++
-          results.push({ filename, status: "error", error: error.message })
+          // Check if it's a duplicate error
+          if (error.code === "23505" || error.message.includes("duplicate")) {
+            skipCount++
+            results.push({ filename, status: "skipped", reason: "already exists" })
+          } else {
+            errorCount++
+            results.push({ filename, status: "error", error: error.message })
+          }
         } else {
           successCount++
           results.push({
