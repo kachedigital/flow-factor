@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
+import { createGroq } from "@ai-sdk/groq"
 import { getKnowledgeBasePDFs } from "@/lib/pdf-knowledge"
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 const AXIA_SYSTEM_CONTEXT = `You are Axia, an expert web accessibility consultant and WCAG specialist.
 
@@ -112,7 +117,7 @@ Provide a helpful, actionable answer. If relevant information is available in th
     let text: string | undefined
     try {
       const result = await generateText({
-        model: "groq/llama-3.3-70b-versatile",
+        model: groq("llama-3.3-70b-versatile"),
         prompt: prompt,
         maxTokens: 1000,
         temperature: 0.7,
