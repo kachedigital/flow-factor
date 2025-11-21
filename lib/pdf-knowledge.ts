@@ -9,7 +9,7 @@ export interface PDFDocument {
   uploaded_at: string
   file_size: number
   extracted_text: string | null
-  category: "knowledge-base" | "analysis-only"
+  category: "knowledge-base" | "analysis-only" | "procurement"
 }
 
 export async function savePDFToKnowledge(
@@ -83,7 +83,7 @@ export async function getAllPDFDocuments(): Promise<PDFDocument[]> {
 
 export async function updatePDFCategory(
   id: string,
-  category: "knowledge-base" | "analysis-only",
+  category: "knowledge-base" | "analysis-only" | "procurement",
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase.from("pdf_documents").update({ category }).eq("id", id)
@@ -113,5 +113,25 @@ export async function deletePDFDocument(id: string): Promise<{ success: boolean;
   } catch (error) {
     console.error("[v0] Exception deleting PDF:", error)
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+  }
+}
+
+export async function getProcurementPDFs(): Promise<PDFDocument[]> {
+  try {
+    const { data, error } = await supabase
+      .from("pdf_documents")
+      .select("*")
+      .eq("category", "procurement")
+      .order("uploaded_at", { ascending: false })
+
+    if (error) {
+      console.error("[v0] Error fetching procurement PDFs:", error)
+      return []
+    }
+
+    return (data as PDFDocument[]) || []
+  } catch (error) {
+    console.error("[v0] Exception fetching procurement PDFs:", error)
+    return []
   }
 }

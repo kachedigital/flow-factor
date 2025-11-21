@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { searchKnowledgeBase } from "@/lib/knowledge-search"
+import { searchKnowledgeBase, formatSearchResults } from "@/lib/knowledge-search"
 
 const SYSTEM_CONTEXT = `You are an expert California State Procurement Strategy & Compliance Advisor specializing in Generative AI (GenAI) products. Your role is to provide authoritative, practical guidance on:
 
@@ -22,14 +22,13 @@ export async function POST(req: NextRequest) {
 
     console.log("[v0] CalPro search query:", message)
 
-    // Search the knowledge base
-    const searchResults = await searchKnowledgeBase(message)
+    const searchResults = await searchKnowledgeBase(message, "procurement")
 
     console.log("[v0] CalPro search results:", searchResults.length, "documents found")
 
     if (searchResults.length === 0) {
       return NextResponse.json({
-        response: `I searched the knowledge base but couldn't find specific information about "${message}". 
+        response: `I searched the procurement knowledge base but couldn't find specific information about "${message}". 
 
 As a California State Procurement Expert, I can provide general guidance:
 
@@ -40,20 +39,17 @@ For GenAI procurement in California, key considerations include:
 • Vendor evaluation criteria including financial stability and technical capabilities
 • Contract terms covering SLAs, data rights, and IP ownership
 
-To get more specific guidance, please upload relevant procurement policy documents to the knowledge base, or rephrase your question with more specific terms.`,
+**To get more specific guidance:** Upload California procurement policy documents to the knowledge base with the "procurement" category, or visit /api/migrate-procurement-pdfs to load procurement-specific PDFs.`,
       })
     }
 
-    // Format the response with search results
-    const formattedResults = searchResults
-      .map((result, index) => {
-        return `**Source ${index + 1}: ${result.filename}**\n${result.excerpt}\n`
-      })
-      .join("\n")
+    const response = formatSearchResults(searchResults, message)
 
-    const response = `Based on the available procurement and compliance documentation:\n\n${formattedResults}\n\n**Recommendation:** Always verify critical compliance information with official California state sources and consult with your legal team or relevant state agencies for final procurement decisions.`
-
-    return NextResponse.json({ response })
+    return NextResponse.json({
+      response:
+        response +
+        "\n\n**Recommendation:** Always verify critical compliance information with official California state sources and consult with your legal team or relevant state agencies for final procurement decisions.",
+    })
   } catch (error) {
     console.error("[v0] CalPro chat error:", error)
     return NextResponse.json(

@@ -1,4 +1,4 @@
-import { getKnowledgeBasePDFs } from "./pdf-knowledge"
+import { getKnowledgeBasePDFs, getProcurementPDFs } from "./pdf-knowledge"
 
 export interface SearchResult {
   filename: string
@@ -7,8 +7,13 @@ export interface SearchResult {
   pdfId: string
 }
 
-export async function searchKnowledgeBase(query: string): Promise<SearchResult[]> {
-  const pdfs = await getKnowledgeBasePDFs()
+export async function searchKnowledgeBase(
+  query: string,
+  category: "accessibility" | "procurement" = "accessibility",
+): Promise<SearchResult[]> {
+  const pdfs = category === "procurement" ? await getProcurementPDFs() : await getKnowledgeBasePDFs()
+
+  console.log(`[v0] Searching ${category} knowledge base, found ${pdfs.length} PDFs`)
 
   if (pdfs.length === 0) {
     return []
