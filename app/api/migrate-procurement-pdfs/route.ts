@@ -8,9 +8,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log("[v0] Starting procurement PDF migration...")
 
-    // List all PDFs from the Axia/procurement_knowledge/ folder
     const { blobs } = await list({
-      prefix: "Axia/procurement_knowledge/",
+      prefix: "CalPro/procurement_knowledge/",
       token: process.env.BLOB_READ_WRITE_TOKEN!,
     })
 
