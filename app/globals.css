@@ -136,6 +136,50 @@
   border-left-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Added enhanced prose styles for documentation pages */
+@layer base {
+  .prose h1 {
+    @apply text-4xl font-bold text-foreground mb-6 mt-8;
+  }
+
+  .prose h2 {
+    @apply text-3xl font-bold text-foreground mb-4 mt-8;
+  }
+
+  .prose h3 {
+    @apply text-2xl font-semibold text-foreground mb-3 mt-6;
+  }
+
+  .prose h4 {
+    @apply text-xl font-semibold text-foreground mb-2 mt-4;
+  }
+
+  .prose h5 {
+    @apply text-lg font-semibold text-foreground mb-2 mt-3;
+  }
+
+  .prose p {
+    @apply text-foreground/90 mb-4 leading-relaxed;
+  }
+
+  .prose a {
+    @apply text-primary hover:underline;
+  }
+
+  .prose strong {
+    @apply font-semibold text-foreground;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply mb-4 ml-6;
+  }
+
+  .prose li {
+    @apply mb-2;
+  }
+}
+
 /* Gradient background */
 .gradient-bg {
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);

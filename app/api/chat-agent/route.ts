@@ -1,16 +1,15 @@
-import { streamText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { generateText } from "ai"
+import { createGroq } from "@ai-sdk/groq"
 import type { CoreMessage } from "ai"
 
-// Route: /api/chat-agent
-export const runtime = "edge"
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 export async function POST(req: Request) {
   const { messages }: { messages: CoreMessage[] } = await req.json()
 
-  // System prompt defining the MVP agent's behavior
-  const systemPrompt = `
-  You are Flow, a friendly, ADHD-aware productivity coach and coworking assistant.
+  const systemPrompt = `You are Flow, a friendly, ADHD-aware productivity coach and coworking assistant.
   You specialize in helping neurodivergent professionals stay focused, break down tasks, and feel motivated without pressure.
 
   Core behaviors to use when appropriate:
@@ -21,17 +20,21 @@ export async function POST(req: Request) {
   - Rumination Interrupt: If user is overthinking, suggest something like "Name 5 things you see around you" or "Try a 2-minute reset."
 
   Always keep replies short, actionable, and encouraging.
-  Avoid being overly robotic or formal. Your tone is warm, practical, and friendly.
-  `
+  Avoid being overly robotic or formal. Your tone is warm, practical, and friendly.`
 
-  // Add the system prompt to the beginning of the messages array
-  const messagesWithSystemPrompt: CoreMessage[] = [{ role: "system", content: systemPrompt }, ...messages]
+  // Build simple prompt from messages
+  const userMessages = messages.filter((m) => m.role === "user").map((m) => m.content)
+  const lastMessage = userMessages[userMessages.length - 1]
 
-  const result = await streamText({
-    model: openai("gpt-4"), // Or your preferred OpenAI model like 'gpt-4o'
-    messages: messagesWithSystemPrompt,
+  const prompt = `${systemPrompt}\n\nUser: ${lastMessage}\n\nYour response:`
+
+  const { text } = await generateText({
+    model: groq("llama-3.3-70b-versatile"),
+    prompt: prompt,
+    maxTokens: 500,
   })
 
-  // Respond with the stream
-  return result.toAIStreamResponse()
+  return new Response(text, {
+    headers: { "Content-Type": "text/plain" },
+  })
 }

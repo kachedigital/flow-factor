@@ -5,18 +5,21 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File
+    const folder = (formData.get("folder") as string) || "uploads"
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 })
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(file.name, file, {
+    const pathname = `${folder}/${file.name}`
+    const blob = await put(pathname, file, {
       access: "public",
       addRandomSuffix: true,
     })
 
-    return NextResponse.json({ url: blob.url })
+    console.log("[v0] Uploaded to folder:", folder, "URL:", blob.url)
+
+    return NextResponse.json({ url: blob.url, folder, fileName: file.name })
   } catch (error) {
     console.error("Upload error:", error)
     return NextResponse.json({ error: "Upload failed" }, { status: 500 })

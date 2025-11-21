@@ -17,6 +17,7 @@ interface FileUploadProps {
   acceptedTypes?: string[]
   onUploadComplete?: (url: string, fileName: string) => void
   className?: string
+  folder?: "knowledge-base" | "uploads"
 }
 
 interface UploadedFile {
@@ -33,6 +34,7 @@ export function FileUpload({
   acceptedTypes = ["image/*", "application/pdf", ".doc", ".docx"],
   onUploadComplete,
   className,
+  folder = "knowledge-base",
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
@@ -140,9 +142,9 @@ export function FileUpload({
       }
 
       try {
-        // Upload to Vercel Blob using the upload API
         const formData = new FormData()
         formData.append("file", file)
+        formData.append("folder", folder)
 
         const response = await fetch("/api/upload", {
           method: "POST",
@@ -154,10 +156,10 @@ export function FileUpload({
           throw new Error(`Upload failed: ${errorText}`)
         }
 
-        const { url } = await response.json()
+        const { url, fileName } = await response.json()
 
         const uploadedFile: UploadedFile = {
-          name: file.name,
+          name: fileName || file.name,
           url,
           size: file.size || 0,
           type: file.type || "unknown",
@@ -167,7 +169,7 @@ export function FileUpload({
         setUploadProgress((prev) => prev + 100 / files.length)
 
         if (onUploadComplete) {
-          onUploadComplete(url, file.name)
+          onUploadComplete(url, fileName || file.name)
         }
 
         return uploadedFile

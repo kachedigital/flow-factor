@@ -1,30 +1,45 @@
 import type { AIResponse } from "../types"
 import { generateText } from "ai"
-import { openai } from "@ai-sdk/openai"
+import { createGroq } from "@ai-sdk/groq"
 import { createClient } from "@supabase/supabase-js"
 
-// System prompt for the AI assistant
-const ALIGNA_SYSTEM_PROMPT = `You are Aligna, an AI ergonomics consultant for FlowFactor.
-Your role is to provide personalized workspace ergonomics advice to help users create healthier, more comfortable work environments.
-Focus on practical, evidence-based recommendations for improving posture, reducing strain, and optimizing workspace setup.
-Be friendly, supportive, and educational in your responses.
-When users share images of their workspace, analyze the setup and provide specific suggestions for improvement.
-Always prioritize health and comfort while acknowledging budget constraints and practical limitations.
-Avoid medical diagnoses or treatment recommendations - suggest consulting healthcare professionals when appropriate.
-Keep responses concise, practical, and actionable.`
+const ALIGNA_SYSTEM_PROMPT = `You are Aligna, an AI consultant specializing in Human Factors Engineering for FlowFactor.
 
-function isValidOpenAIKey(key: string): boolean {
-  return key.startsWith("sk-") && key.length > 20
-}
+Your expertise spans:
+- Workplace ergonomics (office, industrial, occupational settings)
+- Cognitive ergonomics and mental workload optimization
+- Neuroinclusive design for neurodivergent individuals (ADHD, autism, dyslexia, etc.)
+- Accessibility and universal design (WCAG, ADA, Section 508)
+- User experience (UX) and human-centered design
+- Safety engineering and error prevention
+- Biomechanics and physical ergonomics
+- Environmental factors (lighting, noise, temperature)
 
-async function getOpenAIModel() {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey || !isValidOpenAIKey(apiKey)) {
-    throw new Error("Invalid or missing OpenAI API key")
+When analyzing workspaces:
+- Provide specific, actionable recommendations
+- Consider both physical and cognitive ergonomics
+- Address accessibility and inclusive design
+- Suggest evidence-based solutions
+- Acknowledge budget constraints and practical limitations
+- Prioritize health, safety, and user well-being
+
+When users share images, analyze:
+- Posture and body positioning
+- Equipment setup (desk, chair, monitor, keyboard, mouse)
+- Lighting and environmental factors
+- Potential risk factors for musculoskeletal disorders
+- Accessibility considerations
+
+Keep responses practical, educational, and supportive. Avoid medical diagnoses - suggest consulting healthcare professionals when appropriate.`
+
+async function getGroqModel() {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) {
+    throw new Error("Missing Groq API key")
   }
 
-  const modelName = process.env.OPENAI_MODEL || "gpt-4o"
-  return openai(modelName)
+  const groq = createGroq({ apiKey })
+  return groq("llama-3.3-70b-versatile")
 }
 
 async function getSupabaseClient() {
@@ -76,7 +91,7 @@ export async function generateAIResponse(prompt: string, image?: File): Promise<
       }
     }
 
-    const model = await getOpenAIModel()
+    const model = await getGroqModel()
 
     const messages = [
       { role: "system", content: ALIGNA_SYSTEM_PROMPT },
@@ -86,7 +101,8 @@ export async function generateAIResponse(prompt: string, image?: File): Promise<
     const { text } = await generateText({
       model,
       messages,
-      maxTokens: 800,
+      maxTokens: 1000,
+      temperature: 0.7,
     })
 
     return {
@@ -94,7 +110,7 @@ export async function generateAIResponse(prompt: string, image?: File): Promise<
       image: null,
     }
   } catch (error) {
-    console.error("OpenAI call failed:", error)
+    console.error("AI generation failed:", error)
     throw error
   }
 }

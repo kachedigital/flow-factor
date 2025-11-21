@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { generateText } from "ai"
 import { createGroq } from "@ai-sdk/groq"
+import { savePDFToKnowledge } from "@/lib/pdf-knowledge"
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     let pdfBuffer: Buffer
     let fileName = "document.pdf"
     let fileSize = 0
+    let blobUrl = ""
 
     if (contentType.includes("multipart/form-data")) {
       console.log("[v0] Processing multipart/form-data upload")
@@ -57,6 +59,7 @@ export async function POST(request: Request) {
       }
 
       fileName = providedFileName || "document.pdf"
+      blobUrl = fileUrl
 
       console.log("[v0] Fetching PDF from Blob URL...")
       try {
@@ -111,6 +114,29 @@ export async function POST(request: Request) {
     if (!pdfHeader.startsWith("%PDF")) {
       console.error("[v0] File does not appear to be a PDF. Header:", pdfHeader)
       return NextResponse.json({ error: "File does not appear to be a valid PDF" }, { status: 400 })
+    }
+
+    let extractedText = ""
+    try {
+      // Simple text extraction - look for text between stream objects
+      const pdfContent = pdfBuffer.toString("latin1")
+      const textMatches = pdfContent.match(/$$([^)]+)$$/g)
+      if (textMatches) {
+        extractedText = textMatches
+          .map((match) => match.slice(1, -1))
+          .join(" ")
+          .replace(/\\n/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      }
+      console.log("[v0] Extracted text length:", extractedText.length)
+
+      if (blobUrl && extractedText.length > 0) {
+        console.log("[v0] Saving PDF to knowledge base...")
+        await savePDFToKnowledge(fileName, blobUrl, fileSize, extractedText)
+      }
+    } catch (textError) {
+      console.error("[v0] Error extracting text:", textError)
     }
 
     const issues: AccessibilityIssue[] = []
@@ -236,8 +262,7 @@ Provide a brief, encouraging summary (2-3 sentences) about PDF accessibility bes
     const moderateCount = issues.filter((i) => i.severity === "moderate").length
     const minorCount = issues.filter((i) => i.severity === "minor").length
 
-    // Calculate score based on file size and structure (simplified for MVP)
-    const accessibilityScore = 50 // Start at 50 since we can't verify these items automatically
+    const accessibilityScore = 50
 
     const result = {
       scannedResource: fileName,
@@ -259,6 +284,7 @@ Provide a brief, encouraging summary (2-3 sentences) about PDF accessibility bes
       moderateCount,
       minorCount,
       totalIssues: issues.length,
+      extractedText,
       recommendations: [
         {
           title: "Use Adobe Acrobat Pro for Full Analysis",

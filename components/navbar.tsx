@@ -116,6 +116,7 @@ export function Navbar() {
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "Tools", href: "/tools" },
+    { name: "Docs", href: "/docs" },
   ]
 
   return (

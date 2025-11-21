@@ -1,16 +1,27 @@
 "use client"
 
 import type React from "react"
-import { useState, type ChangeEvent } from "react"
+import { useState, useRef, useEffect, type ChangeEvent } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, Globe, CheckCircle2, AlertCircle, Info, Sparkles, ExternalLink } from "lucide-react"
+import {
+  FileText,
+  Globe,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  Sparkles,
+  ExternalLink,
+  MessageSquare,
+  Send,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { motion } from "framer-motion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { FileUpload } from "@/components/file-upload"
+import { Textarea } from "@/components/ui/textarea"
 
 interface AccessibilityIssue {
   id: string
@@ -34,6 +45,13 @@ interface AnalysisResults {
   totalIssues: number
 }
 
+interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+}
+
 export default function AxiaClient() {
   const [activeTab, setActiveTab] = useState("web")
   const [url, setUrl] = useState("")
@@ -42,6 +60,11 @@ export default function AxiaClient() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [results, setResults] = useState<AnalysisResults | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [chatInput, setChatInput] = useState("")
+  const [isChatLoading, setIsChatLoading] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value)
@@ -149,6 +172,60 @@ export default function AxiaClient() {
     }
   }
 
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!chatInput.trim() || isChatLoading) return
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: chatInput,
+      timestamp: new Date(),
+    }
+
+    setChatMessages((prev) => [...prev, userMessage])
+    setChatInput("")
+    setIsChatLoading(true)
+
+    try {
+      const response = await fetch("/api/axia-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: chatInput }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.response,
+        timestamp: new Date(),
+      }
+
+      setChatMessages((prev) => [...prev, assistantMessage])
+    } catch (error) {
+      console.error("[v0] Chat error:", error)
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again.",
+        timestamp: new Date(),
+      }
+      setChatMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [chatMessages])
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <motion.div
@@ -172,14 +249,18 @@ export default function AxiaClient() {
       </motion.div>
 
       <Tabs defaultValue="web" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+        <TabsList className="grid w-full grid-cols-3 max-w-3xl mx-auto">
           <TabsTrigger value="web" className="flex items-center gap-2 py-2.5 md:py-3 text-sm md:text-base">
             <Globe className="h-4 w-4 md:h-5 md:w-5" />
-            Web Page Analysis
+            Web Analysis
           </TabsTrigger>
           <TabsTrigger value="pdf" className="flex items-center gap-2 py-2.5 md:py-3 text-sm md:text-base">
             <FileText className="h-4 w-4 md:h-5 md:w-5" />
-            PDF Document Analysis
+            PDF Analysis
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="flex items-center gap-2 py-2.5 md:py-3 text-sm md:text-base">
+            <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
+            Ask Axia
           </TabsTrigger>
         </TabsList>
 
@@ -255,6 +336,94 @@ export default function AxiaClient() {
               >
                 {isAnalyzing ? "Analyzing PDF..." : "Analyze PDF"}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="chat" className="mt-8">
+          <Card className="max-w-2xl mx-auto shadow-lg h-[600px] flex flex-col">
+            <CardHeader>
+              <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-purple-500" />
+                Ask Axia About Web Accessibility
+              </CardTitle>
+              <CardDescription>
+                Get instant answers to your web accessibility questions, WCAG guidance, and best practices.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+                {chatMessages.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-12">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-lg font-medium">Start a conversation</p>
+                    <p className="text-sm mt-2">
+                      Ask me about WCAG compliance, accessibility best practices, or how to fix specific issues.
+                    </p>
+                    <div className="mt-6 space-y-2 text-xs">
+                      <p className="font-semibold">Example questions:</p>
+                      <ul className="space-y-1 text-left max-w-sm mx-auto">
+                        <li>• What is WCAG Level AA compliance?</li>
+                        <li>• How do I make images accessible?</li>
+                        <li>• What are ARIA labels and when should I use them?</li>
+                        <li>• How can I test keyboard navigation?</li>
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                          msg.role === "user"
+                            ? "bg-purple-600 text-white"
+                            : "bg-gray-100 dark:bg-gray-800 text-foreground"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        <p className="text-xs opacity-70 mt-1">
+                          {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+                {isChatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-100" />
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-200" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <Textarea
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask about web accessibility..."
+                  className="flex-1 min-h-[60px] max-h-[120px] resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSendMessage(e)
+                    }
+                  }}
+                />
+                <Button type="submit" disabled={isChatLoading || !chatInput.trim()} className="self-end">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { MessageCircle, X, Send, Bot } from "lucide-react"
+import { MessageCircle, X, Send, Bot, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import ReactMarkdown from "react-markdown"
 
@@ -15,38 +15,61 @@ export function ChatbotButton() {
   const [messages, setMessages] = useState([
     {
       role: "bot",
-      content: "Hi there! I'm the FlowFactor AI assistant. How can I help you with Human Factors Engineering today?",
+      content:
+        "Hi there! I'm the FlowFactor AI assistant specializing in Human Factors Engineering. I can help you with ergonomics, workplace design, accessibility, and creating human-centered solutions. How can I assist you today?",
     },
   ])
   const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const toggleChat = () => {
     setIsOpen(!isOpen)
   }
 
-  const handleSend = () => {
-    if (input.trim()) {
-      // Add user message
-      setMessages([...messages, { role: "user", content: input }])
+  const handleSend = async () => {
+    if (input.trim() && !isLoading) {
+      const userMessage = input.trim()
+      setMessages((prev) => [...prev, { role: "user", content: userMessage }])
+      setInput("")
+      setIsLoading(true)
 
-      // Simulate bot response (in a real app, this would call an API)
-      setTimeout(() => {
+      try {
+        console.log("[v0] Sending message to chat assistant:", userMessage)
+        const response = await fetch("/api/chat-assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage }),
+        })
+
+        console.log("[v0] Response status:", response.status)
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error("[v0] API error:", errorData)
+          throw new Error("Failed to get response")
+        }
+
+        const data = await response.json()
+        console.log("[v0] Received response:", data)
+        setMessages((prev) => [...prev, { role: "bot", content: data.response }])
+      } catch (error) {
+        console.error("[v0] Chat error:", error)
         setMessages((prev) => [
           ...prev,
           {
             role: "bot",
             content:
-              "Thanks for your message! This is a demo chatbot. In the real implementation, this would connect to an AI service like OpenAI to provide helpful responses about Human Factors Engineering.",
+              "I apologize, but I'm having trouble connecting right now. Please try again in a moment or visit our full AI consultant at /ai-consultant for more features.",
           },
         ])
-      }, 1000)
-
-      setInput("")
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !isLoading) {
       e.preventDefault()
       handleSend()
     }
@@ -105,6 +128,14 @@ export function ChatbotButton() {
                     </div>
                   </div>
                 ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-lg px-4 py-2 flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Thinking...</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="p-3 border-t">
@@ -113,11 +144,17 @@ export function ChatbotButton() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type your message..."
+                    placeholder="Ask about human factors..."
                     className="flex-1"
+                    disabled={isLoading}
                   />
-                  <Button onClick={handleSend} size="icon" className="bg-primary hover:bg-primary/90">
-                    <Send className="h-4 w-4" />
+                  <Button
+                    onClick={handleSend}
+                    size="icon"
+                    className="bg-primary hover:bg-primary/90"
+                    disabled={isLoading || !input.trim()}
+                  >
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
                 <div className="text-xs text-muted-foreground mt-2 text-center">Powered by FlowFactor AI</div>
