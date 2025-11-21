@@ -80,17 +80,20 @@ Provide a helpful, actionable answer. If relevant information is available in th
       text = result.text
       console.log("[v0] generateText completed")
       console.log("[v0] Response text length:", text?.length || 0)
+      console.log("[v0] Full result object:", JSON.stringify(result, null, 2))
     } catch (groqError) {
       console.error("[v0] Groq API error:", groqError)
-      text =
-        "I apologize, but I'm experiencing technical difficulties connecting to my AI service. Please try again in a moment. If the issue persists, the knowledge base may not be fully set up yet."
+      return NextResponse.json({
+        response:
+          "I apologize, but I'm experiencing technical difficulties with my AI service. This could be due to API rate limits or connectivity issues. Please try again in a moment.",
+      })
     }
 
     if (!text || text.trim().length === 0) {
-      console.error("[v0] No text in result!")
+      console.error("[v0] Empty response from Groq API")
       return NextResponse.json({
         response:
-          "I apologize, but I wasn't able to generate a response. This might be because the knowledge base is still being set up. Please try again in a moment.",
+          "I received your question but wasn't able to generate a complete response. The knowledge base shows 0 PDFs loaded. Please ensure the pdf_documents table is populated by running the migration script, then try again.",
       })
     }
 
@@ -103,10 +106,9 @@ Provide a helpful, actionable answer. If relevant information is available in th
     return NextResponse.json(
       {
         response:
-          "I apologize, but I encountered an error processing your request. Please try again. If the issue persists, the knowledge base may need to be set up.",
-        error: error instanceof Error ? error.message : String(error),
+          "I apologize, but I encountered an error. The knowledge base is currently empty (0 PDFs loaded). Please run the migration script to load your PDFs from the Blob storage into the database.",
       },
-      { status: 200 }, // Return 200 so client displays the message instead of generic error
+      { status: 200 },
     )
   }
 }
