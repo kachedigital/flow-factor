@@ -1,19 +1,49 @@
 "use client"
 
+import { Label } from "@/components/ui/label"
+
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Send, Loader2, FileText, AlertCircle } from "lucide-react"
+import { Textarea, Input } from "@/components/ui/input"
+import {
+  Send,
+  Loader2,
+  FileText,
+  AlertCircle,
+  Paperclip,
+  Link2,
+  X,
+  File,
+  Settings,
+  Laptop,
+  Sparkles,
+} from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 const SUGGESTED_PROMPTS = [
   "What are the key compliance requirements for GenAI procurement in California?",
   "How do I evaluate GenAI vendors for state contracts?",
   "What are the data privacy considerations for GenAI products?",
-  "Analyze this CA.gov procurement policy: [paste URL]",
+  "Help me draft an RFP for a GenAI solution",
 ]
 
 interface Message {
@@ -22,11 +52,25 @@ interface Message {
   content: string
 }
 
+type Attachment = {
+  name: string
+  type: "pdf" | "url"
+  data?: string
+  url?: string
+}
+
 export function CalProClient() {
   const [input, setInput] = useState("")
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [urlInput, setUrlInput] = useState("")
+  const [showUrlInput, setShowUrlInput] = useState(false)
+  const [modelProvider, setModelProvider] = useState<"openai" | "google" | "local" | "keyword">("keyword")
+  const [googleApiKey, setGoogleApiKey] = useState("")
+  const [showSettings, setShowSettings] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -35,6 +79,52 @@ export function CalProClient() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    for (const file of Array.from(files)) {
+      if (file.type === "application/pdf") {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          const base64 = event.target?.result as string
+          setAttachments((prev) => [
+            ...prev,
+            {
+              name: file.name,
+              type: "pdf",
+              data: base64.split(",")[1],
+            },
+          ])
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleAddUrl = () => {
+    if (!urlInput.trim()) return
+
+    setAttachments((prev) => [
+      ...prev,
+      {
+        name: urlInput,
+        type: "url",
+        url: urlInput,
+      },
+    ])
+    setUrlInput("")
+    setShowUrlInput(false)
+  }
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,25 +137,76 @@ export function CalProClient() {
     }
 
     setMessages((prev) => [...prev, userMessage])
+    const currentInput = input
     setInput("")
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/calpro-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
-      })
+      if (modelProvider !== "keyword") {
+        const response = await fetch("/api/calpro-chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-google-api-key": googleApiKey,
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "user",
+                content: currentInput,
+                experimental_attachments: attachments.length > 0 ? attachments : undefined,
+              },
+            ],
+            modelProvider,
+          }),
+        })
 
-      const data = await response.json()
+        if (!response.ok) {
+          throw new Error("Failed to get response")
+        }
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.response || data.error || "No response received",
+        const reader = response.body?.getReader()
+        const decoder = new TextDecoder()
+        let accumulatedContent = ""
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "",
+        }
+
+        setMessages((prev) => [...prev, assistantMessage])
+
+        while (true) {
+          const { done, value } = await reader!.read()
+          if (done) break
+
+          const chunk = decoder.decode(value)
+          accumulatedContent += chunk
+
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === assistantMessage.id ? { ...msg, content: accumulatedContent } : msg)),
+          )
+        }
+      } else {
+        const response = await fetch("/api/calpro-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: currentInput }),
+        })
+
+        const data = await response.json()
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.response || data.error || "No response received",
+        }
+
+        setMessages((prev) => [...prev, assistantMessage])
       }
 
-      setMessages((prev) => [...prev, assistantMessage])
+      setAttachments([])
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -84,7 +225,80 @@ export function CalProClient() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)]">
-      {/* Messages Area */}
+      <div className="flex items-center justify-between px-4 py-2 border-b bg-background/50 backdrop-blur-sm mb-4">
+        <div className="flex items-center gap-2">
+          <Settings className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Mode:</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 bg-transparent">
+                {modelProvider === "google" && <Sparkles className="w-4 h-4 mr-2" />}
+                {modelProvider === "openai" && <Sparkles className="w-4 h-4 mr-2" />}
+                {modelProvider === "local" && <Laptop className="w-4 h-4 mr-2" />}
+                {modelProvider === "keyword" && <FileText className="w-4 h-4 mr-2" />}
+                {modelProvider === "google"
+                  ? "AI (Gemini)"
+                  : modelProvider === "openai"
+                    ? "AI (GPT-4)"
+                    : modelProvider === "local"
+                      ? "AI (Local)"
+                      : "Keyword Search"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Search Mode</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setModelProvider("keyword")}>
+                <FileText className="w-4 h-4 mr-2" />
+                Keyword Search (No AI)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setModelProvider("google")}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI (Google Gemini)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setModelProvider("openai")}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI (OpenAI GPT-4)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setModelProvider("local")}>
+                <Laptop className="w-4 h-4 mr-2" />
+                AI (Local Ollama)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {modelProvider === "google" && (
+          <Dialog open={showSettings} onOpenChange={setShowSettings}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8">
+                <Settings className="w-4 h-4 mr-2" />
+                API Key
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Google API Key</DialogTitle>
+                <DialogDescription>Enter your Google Generative AI API key to use Gemini models.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="google-key">API Key</Label>
+                  <Input
+                    id="google-key"
+                    type="password"
+                    value={googleApiKey}
+                    onChange={(e) => setGoogleApiKey(e.target.value)}
+                    placeholder="Enter your Google API key"
+                  />
+                </div>
+                <Button onClick={() => setShowSettings(false)}>Save</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-6 py-12">
@@ -155,9 +369,69 @@ export function CalProClient() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
+      {attachments.length > 0 && (
+        <div className="px-4 py-2 border-t">
+          <div className="flex flex-wrap gap-2">
+            {attachments.map((attachment, index) => (
+              <div key={index} className="flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-sm">
+                {attachment.type === "pdf" ? <File className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+                <span className="max-w-[200px] truncate">{attachment.name}</span>
+                <button onClick={() => removeAttachment(index)} className="hover:text-destructive">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showUrlInput && (
+        <div className="px-4 py-2 border-t">
+          <div className="flex gap-2">
+            <Input
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="Enter URL (e.g., https://dgs.ca.gov/...)"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddUrl()
+                }
+              }}
+            />
+            <Button onClick={handleAddUrl} size="sm">
+              Add
+            </Button>
+            <Button onClick={() => setShowUrlInput(false)} size="sm" variant="ghost">
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Card className="p-4">
         <form onSubmit={handleSubmit} className="flex gap-2">
+          <input ref={fileInputRef} type="file" accept=".pdf" multiple onChange={handleFileUpload} className="hidden" />
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+          >
+            <Paperclip className="w-5 h-5" />
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowUrlInput(!showUrlInput)}
+            disabled={isLoading}
+          >
+            <Link2 className="w-5 h-5" />
+          </Button>
+
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -184,8 +458,9 @@ export function CalProClient() {
         <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
           <AlertCircle className="w-3 h-3" />
           <span>
-            This is an AI assistant. Paste California government URLs (ca.gov) for analysis. Always verify critical
-            information with official sources.
+            {modelProvider === "keyword"
+              ? "Keyword search mode - no AI used. Switch to AI mode for intelligent responses."
+              : "AI mode active. Attach PDFs or URLs for analysis."}
           </span>
         </div>
       </Card>
