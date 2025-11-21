@@ -57,8 +57,7 @@ export async function POST(request: NextRequest) {
         }
       }
     } catch (error) {
-      console.error("[v0] Knowledge base fetch failed:", error)
-      // Continue without knowledge base context
+      console.error("[v0] Error fetching knowledge base PDFs:", error)
     }
 
     const prompt = `${AXIA_SYSTEM_CONTEXT}${contextText}
@@ -70,18 +69,29 @@ Provide a helpful, actionable answer. If relevant information is available in th
     console.log("[v0] Calling generateText with Groq...")
     console.log("[v0] Prompt length:", prompt.length)
 
-    const { text } = await generateText({
-      model: groq("llama-3.3-70b-versatile"),
-      prompt: prompt,
-      maxTokens: 1000,
-    })
-
-    console.log("[v0] generateText completed")
-    console.log("[v0] Response text length:", text?.length || 0)
+    let text: string | undefined
+    try {
+      const result = await generateText({
+        model: groq("llama-3.3-70b-versatile"),
+        prompt: prompt,
+        maxTokens: 1000,
+        temperature: 0.7,
+      })
+      text = result.text
+      console.log("[v0] generateText completed")
+      console.log("[v0] Response text length:", text?.length || 0)
+    } catch (groqError) {
+      console.error("[v0] Groq API error:", groqError)
+      text =
+        "I apologize, but I'm experiencing technical difficulties connecting to my AI service. Please try again in a moment. If the issue persists, the knowledge base may not be fully set up yet."
+    }
 
     if (!text || text.trim().length === 0) {
       console.error("[v0] No text in result!")
-      return NextResponse.json({ error: "No response generated" }, { status: 500 })
+      return NextResponse.json({
+        response:
+          "I apologize, but I wasn't able to generate a response. This might be because the knowledge base is still being set up. Please try again in a moment.",
+      })
     }
 
     console.log("[v0] Returning successful response")
@@ -92,10 +102,11 @@ Provide a helpful, actionable answer. If relevant information is available in th
 
     return NextResponse.json(
       {
-        error: "Failed to generate response",
-        details: error instanceof Error ? error.message : String(error),
+        response:
+          "I apologize, but I encountered an error processing your request. Please try again. If the issue persists, the knowledge base may need to be set up.",
+        error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 },
+      { status: 200 }, // Return 200 so client displays the message instead of generic error
     )
   }
 }
