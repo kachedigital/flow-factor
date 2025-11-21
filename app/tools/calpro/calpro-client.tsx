@@ -1,6 +1,4 @@
 "use client"
-
-import { Label } from "@/components/ui/label"
 import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -29,14 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 
 const SUGGESTED_PROMPTS = [
   "What are the key compliance requirements for GenAI procurement in California?",
@@ -65,9 +55,7 @@ export function CalProClient() {
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [urlInput, setUrlInput] = useState("")
   const [showUrlInput, setShowUrlInput] = useState(false)
-  const [modelProvider, setModelProvider] = useState<"openai" | "google" | "local" | "keyword">("keyword")
-  const [googleApiKey, setGoogleApiKey] = useState("")
-  const [showSettings, setShowSettings] = useState(false)
+  const [modelProvider, setModelProvider] = useState<"openai" | "groq" | "local" | "keyword">("keyword")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -146,7 +134,6 @@ export function CalProClient() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-google-api-key": googleApiKey,
           },
           body: JSON.stringify({
             messages: [
@@ -231,14 +218,14 @@ export function CalProClient() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 bg-transparent">
-                {modelProvider === "google" && <Sparkles className="w-4 h-4 mr-2" />}
                 {modelProvider === "openai" && <Sparkles className="w-4 h-4 mr-2" />}
+                {modelProvider === "groq" && <Sparkles className="w-4 h-4 mr-2" />}
                 {modelProvider === "local" && <Laptop className="w-4 h-4 mr-2" />}
                 {modelProvider === "keyword" && <FileText className="w-4 h-4 mr-2" />}
-                {modelProvider === "google"
-                  ? "AI (Gemini)"
-                  : modelProvider === "openai"
-                    ? "AI (GPT-4)"
+                {modelProvider === "openai"
+                  ? "AI (OpenAI)"
+                  : modelProvider === "groq"
+                    ? "AI (Groq)"
                     : modelProvider === "local"
                       ? "AI (Local)"
                       : "Keyword Search"}
@@ -251,13 +238,13 @@ export function CalProClient() {
                 <FileText className="w-4 h-4 mr-2" />
                 Keyword Search (No AI)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setModelProvider("google")}>
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI (Google Gemini)
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setModelProvider("openai")}>
                 <Sparkles className="w-4 h-4 mr-2" />
                 AI (OpenAI GPT-4)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setModelProvider("groq")}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI (Groq)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setModelProvider("local")}>
                 <Laptop className="w-4 h-4 mr-2" />
@@ -266,36 +253,6 @@ export function CalProClient() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-        {modelProvider === "google" && (
-          <Dialog open={showSettings} onOpenChange={setShowSettings}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8">
-                <Settings className="w-4 h-4 mr-2" />
-                API Key
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Google API Key</DialogTitle>
-                <DialogDescription>Enter your Google Generative AI API key to use Gemini models.</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="google-key">API Key</Label>
-                  <Input
-                    id="google-key"
-                    type="password"
-                    value={googleApiKey}
-                    onChange={(e) => setGoogleApiKey(e.target.value)}
-                    placeholder="Enter your Google API key"
-                  />
-                </div>
-                <Button onClick={() => setShowSettings(false)}>Save</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
