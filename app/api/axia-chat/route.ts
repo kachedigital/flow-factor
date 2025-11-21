@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { generateText } from "ai"
-import { getKnowledgeBasePDFs } from "@/lib/pdf-knowledge"
+import { searchKnowledgeBase, formatSearchResults } from "@/lib/knowledge-search"
 
 const AXIA_SYSTEM_CONTEXT = `You are Axia, an expert web accessibility consultant and WCAG specialist.
 
@@ -77,92 +76,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid message" }, { status: 400 })
     }
 
-    console.log("[v0] Fetching PDFs from knowledge base...")
-    let contextText = ""
-    let pdfCount = 0
+    console.log("[v0] Searching knowledge base directly...")
 
     try {
-      const pdfs = await getKnowledgeBasePDFs()
-      pdfCount = pdfs.length
-      console.log(`[v0] Found ${pdfCount} knowledge base PDFs`)
+      const searchResults = await searchKnowledgeBase(message)
+      console.log(`[v0] Found ${searchResults.length} relevant documents`)
 
-      if (pdfs.length > 0) {
-        contextText = "\n\nKNOWLEDGE BASE (PDF Documents):\n\n"
-        for (const pdf of pdfs) {
-          if (pdf.extracted_text) {
-            const textPreview = pdf.extracted_text.substring(0, 2000)
-            contextText += `Document: ${pdf.filename}\n${textPreview}\n\n---\n\n`
-          }
-        }
-      }
-    } catch (error) {
-      console.error("[v0] Error fetching knowledge base PDFs:", error)
-    }
+      const response = formatSearchResults(searchResults, message)
 
-    const prompt = `${AXIA_SYSTEM_CONTEXT}${contextText}
-
-User Question: ${message}
-
-Provide a helpful, actionable answer. If relevant information is available in the knowledge base documents above, reference it in your response.`
-
-    console.log("[v0] Calling generateText with OpenAI...")
-    console.log("[v0] Prompt length:", prompt.length)
-    console.log("[v0] Knowledge base PDFs loaded:", pdfCount)
-
-    let text: string | undefined
-    try {
-      const result = await generateText({
-        model: "openai/gpt-4o-mini",
-        prompt: prompt,
-        maxTokens: 1000,
-        temperature: 0.7,
-      })
-
-      text = result.text
-      console.log("[v0] generateText completed")
-      console.log("[v0] Response text length:", text?.length || 0)
-
-      if (!text || text.trim().length === 0) {
-        console.log("[v0] OpenAI returned empty response, trying fallback...")
-        const fallback = getFallbackResponse(message)
-
-        if (fallback) {
-          console.log("[v0] Using fallback response")
-          return NextResponse.json({
-            response:
-              fallback +
-              "\n\n_Note: This is a cached response. The AI service returned an empty result. For more detailed answers, please ensure your knowledge base is populated._",
-          })
-        }
-
-        return NextResponse.json({
-          response: `I received your question about accessibility, but I'm currently unable to generate a detailed response. The knowledge base currently has ${pdfCount} PDFs loaded.
-
-To improve responses:
-1. Run the migration script (scripts/complete-setup.ts) to load PDFs from your Blob storage into the database
-2. Try rephrasing your question
-
-In the meantime, I recommend checking the WCAG documentation at w3.org/WAI for accessibility guidance.`,
-        })
-      }
-    } catch (apiError) {
-      console.error("[v0] OpenAI API error:", apiError)
+      console.log("[v0] Returning search results")
+      return NextResponse.json({ response })
+    } catch (searchError) {
+      console.error("[v0] Knowledge base search error:", searchError)
 
       const fallback = getFallbackResponse(message)
       if (fallback) {
         return NextResponse.json({
-          response: fallback + "\n\n_Note: This is a cached response due to an AI service error._",
+          response: fallback + "\n\n_Note: This is a cached response due to a search error._",
         })
       }
 
       return NextResponse.json({
         response:
-          "I apologize, but I'm experiencing technical difficulties with my AI service. This could be due to API rate limits or connectivity issues. Please try again in a moment.",
+          "I apologize, but I encountered an error searching the knowledge base. Please ensure the pdf_documents table exists and contains data.",
       })
     }
-
-    console.log("[v0] Returning successful response")
-    return NextResponse.json({ response: text })
   } catch (error) {
     console.error("[v0] Axia chat error:", error)
 
