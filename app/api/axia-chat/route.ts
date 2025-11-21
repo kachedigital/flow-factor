@@ -1,11 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText } from "ai"
-import { createGroq } from "@ai-sdk/groq"
 import { getKnowledgeBasePDFs } from "@/lib/pdf-knowledge"
-
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-})
 
 const AXIA_SYSTEM_CONTEXT = `You are Axia, an expert web accessibility consultant and WCAG specialist.
 
@@ -110,14 +105,14 @@ User Question: ${message}
 
 Provide a helpful, actionable answer. If relevant information is available in the knowledge base documents above, reference it in your response.`
 
-    console.log("[v0] Calling generateText with Groq...")
+    console.log("[v0] Calling generateText with OpenAI...")
     console.log("[v0] Prompt length:", prompt.length)
     console.log("[v0] Knowledge base PDFs loaded:", pdfCount)
 
     let text: string | undefined
     try {
       const result = await generateText({
-        model: groq("llama-3.3-70b-versatile"),
+        model: "openai/gpt-4o-mini",
         prompt: prompt,
         maxTokens: 1000,
         temperature: 0.7,
@@ -128,7 +123,7 @@ Provide a helpful, actionable answer. If relevant information is available in th
       console.log("[v0] Response text length:", text?.length || 0)
 
       if (!text || text.trim().length === 0) {
-        console.log("[v0] Groq returned empty response, trying fallback...")
+        console.log("[v0] OpenAI returned empty response, trying fallback...")
         const fallback = getFallbackResponse(message)
 
         if (fallback) {
@@ -136,26 +131,22 @@ Provide a helpful, actionable answer. If relevant information is available in th
           return NextResponse.json({
             response:
               fallback +
-              "\n\n_Note: This is a cached response. The AI service returned an empty result. For more detailed answers, please ensure your knowledge base is populated and the Groq API is functioning properly._",
+              "\n\n_Note: This is a cached response. The AI service returned an empty result. For more detailed answers, please ensure your knowledge base is populated._",
           })
         }
 
         return NextResponse.json({
-          response: `I received your question about accessibility, but I'm currently unable to generate a detailed response. This could be due to:
+          response: `I received your question about accessibility, but I'm currently unable to generate a detailed response. The knowledge base currently has ${pdfCount} PDFs loaded.
 
-• The Groq API returning an empty response (possibly rate limited)
-• The knowledge base is empty (${pdfCount} PDFs loaded)
-
-To fix this:
-1. Run the migration script to load PDFs from your Blob storage into the database
-2. Verify your Groq API key is valid and has remaining credits
-3. Try rephrasing your question
+To improve responses:
+1. Run the migration script (scripts/complete-setup.ts) to load PDFs from your Blob storage into the database
+2. Try rephrasing your question
 
 In the meantime, I recommend checking the WCAG documentation at w3.org/WAI for accessibility guidance.`,
         })
       }
-    } catch (groqError) {
-      console.error("[v0] Groq API error:", groqError)
+    } catch (apiError) {
+      console.error("[v0] OpenAI API error:", apiError)
 
       const fallback = getFallbackResponse(message)
       if (fallback) {
@@ -166,7 +157,7 @@ In the meantime, I recommend checking the WCAG documentation at w3.org/WAI for a
 
       return NextResponse.json({
         response:
-          "I apologize, but I'm experiencing technical difficulties with my AI service. This could be due to API rate limits or connectivity issues. Please try again in a moment, or check that your Groq API key is configured correctly.",
+          "I apologize, but I'm experiencing technical difficulties with my AI service. This could be due to API rate limits or connectivity issues. Please try again in a moment.",
       })
     }
 
