@@ -38,6 +38,11 @@ const CALIFORNIA_URLS: URLConfig[] = [
     title: "Cal eProcure Portal",
     category: "procurement",
   },
+  {
+    url: "https://www.dgs.ca.gov/resources/sam",
+    title: "State Administrative Manual (SAM)",
+    category: "procurement",
+  },
 ]
 
 /**
