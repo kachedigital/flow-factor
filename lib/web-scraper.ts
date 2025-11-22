@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase"
+import { createServerClient } from "@/lib/supabase"
 
 interface ScrapedContent {
   url: string
@@ -81,7 +81,7 @@ export async function scrapeURL(url: string): Promise<ScrapedContent | null> {
 
 export async function cacheScrapedContent(scraped: ScrapedContent): Promise<boolean> {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient()
 
     // Check if URL already exists
     const { data: existing } = await supabase.from("pdf_documents").select("id").eq("blob_url", scraped.url).limit(1)
