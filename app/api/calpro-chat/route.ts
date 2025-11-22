@@ -4,19 +4,19 @@ import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineReleva
 import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
 import { streamText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
-import { createGoogleGenerativeAI } from "@ai-sdk/google"
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 })
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || "",
-})
-
 const ollama = createOpenAI({
   baseURL: "http://localhost:11434/v1",
   apiKey: "ollama",
+})
+
+const groq = createOpenAI({
+  baseURL: "https://api.groq.com/openai/v1",
+  apiKey: process.env.GROQ_API_KEY || "",
 })
 
 export const maxDuration = 30
@@ -40,13 +40,7 @@ Remember to:
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { message, messages, modelProvider = "google" } = body
-
-    const googleApiKey = req.headers.get("x-google-api-key") || process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
-
-    if (modelProvider === "google" && !googleApiKey) {
-      return NextResponse.json({ error: "Google API Key is missing. Please enter it in settings." }, { status: 400 })
-    }
+    const { message, messages, modelProvider = "keyword" } = body
 
     const userMessage = message || (messages && messages[messages.length - 1]?.content) || ""
 
@@ -124,21 +118,30 @@ export async function POST(req: NextRequest) {
       urlContext = "\n\n## California Government Resources\n\n" + scrapedContent.join("\n\n---\n\n")
     }
 
-    if (messages && modelProvider) {
+    if (messages && modelProvider !== "keyword") {
       const contextualPrompt = buildSystemContext(knowledgeContext, urlContext, attachmentContext)
 
       let model
       if (modelProvider === "local") {
         model = ollama("llama3")
-      } else if (modelProvider === "google") {
-        const customGoogle = googleApiKey ? createGoogleGenerativeAI({ apiKey: googleApiKey }) : google
-        model = customGoogle("gemini-2.0-flash-exp")
+      } else if (modelProvider === "groq") {
+        if (!process.env.GROQ_API_KEY) {
+          return NextResponse.json(
+            { error: "Groq API Key missing. Switch to OpenAI or Keyword mode." },
+            { status: 400 },
+          )
+        }
+        model = groq("llama-3.3-70b-versatile")
       } else if (modelProvider === "openai") {
         if (!process.env.OPENAI_API_KEY) {
-          return NextResponse.json({ error: "OpenAI API Key missing. Switch to Google or Local." }, { status: 400 })
+          return NextResponse.json(
+            { error: "OpenAI API Key missing. Switch to Groq or Keyword mode." },
+            { status: 400 },
+          )
         }
         model = openai("gpt-4o-mini")
       } else {
+        // Fallback to keyword search
         const response = formatSearchResults(searchResults, userMessage)
         return NextResponse.json({ response })
       }
