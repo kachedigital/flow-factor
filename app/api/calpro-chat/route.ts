@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { searchKnowledgeBase } from "@/lib/knowledge-search"
 import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineRelevantURLs } from "@/lib/web-scraper"
 import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
-import { streamText } from "ai"
+import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 
 const openai = createOpenAI({
@@ -44,13 +44,15 @@ Remember: You're an assistant helping a colleague succeed, not just returning se
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { messages } = body
+    const { messages }: { messages: UIMessage[] } = body
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: "No messages provided" }, { status: 400 })
     }
 
-    const userMessage = messages[messages.length - 1]?.content || ""
+    const lastMessage = messages[messages.length - 1]
+    const userMessage =
+      typeof lastMessage.content === "string" ? lastMessage.content : lastMessage.content[0]?.text || ""
 
     if (!userMessage || typeof userMessage !== "string") {
       return NextResponse.json({ error: "Invalid message format" }, { status: 400 })
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
     console.log("[v0] CalPro query:", userMessage)
 
     const searchResults = await searchKnowledgeBase(userMessage, "procurement")
-    console.log("[v0] CalPro found", searchResults.length, "relevant documents from knowledge base")
+    console.log("[v0] Searching procurement knowledge base, found", searchResults.length, "PDFs")
 
     let attachmentContext = ""
     if (messages[messages.length - 1]?.experimental_attachments) {
@@ -140,11 +142,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const result = await streamText({
+    const result = streamText({
       model,
       system: contextualPrompt,
-      messages: messages.slice(0, -1).concat([{ role: "user", content: userMessage }]),
-      maxTokens: 2000,
+      messages: convertToModelMessages(messages),
+      maxOutputTokens: 2000,
       temperature: 0.7,
     })
 
