@@ -4,29 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import {
-  Send,
-  Loader2,
-  FileText,
-  AlertCircle,
-  Paperclip,
-  Link2,
-  X,
-  File,
-  Settings,
-  Laptop,
-  Sparkles,
-} from "lucide-react"
+import { Send, Loader2, Paperclip, Link2, X, File, Sparkles } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
 
 const SUGGESTED_PROMPTS = [
   "What are the key compliance requirements for GenAI procurement in California?",
@@ -55,7 +35,6 @@ export function CalProClient() {
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [urlInput, setUrlInput] = useState("")
   const [showUrlInput, setShowUrlInput] = useState(false)
-  const [modelProvider, setModelProvider] = useState<"openai" | "groq" | "local" | "keyword">("keyword")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -129,67 +108,49 @@ export function CalProClient() {
     setIsLoading(true)
 
     try {
-      if (modelProvider !== "keyword") {
-        const response = await fetch("/api/calpro-chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              {
-                role: "user",
-                content: currentInput,
-                experimental_attachments: attachments.length > 0 ? attachments : undefined,
-              },
-            ],
-            modelProvider,
-          }),
-        })
+      const response = await fetch("/api/calpro-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages,
+            {
+              role: "user",
+              content: currentInput,
+              experimental_attachments: attachments.length > 0 ? attachments : undefined,
+            },
+          ],
+        }),
+      })
 
-        if (!response.ok) {
-          throw new Error("Failed to get response")
-        }
+      if (!response.ok) {
+        throw new Error("Failed to get response")
+      }
 
-        const reader = response.body?.getReader()
-        const decoder = new TextDecoder()
-        let accumulatedContent = ""
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+      let accumulatedContent = ""
 
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "",
-        }
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "",
+      }
 
-        setMessages((prev) => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage])
 
-        while (true) {
-          const { done, value } = await reader!.read()
-          if (done) break
+      while (true) {
+        const { done, value } = await reader!.read()
+        if (done) break
 
-          const chunk = decoder.decode(value)
-          accumulatedContent += chunk
+        const chunk = decoder.decode(value)
+        accumulatedContent += chunk
 
-          setMessages((prev) =>
-            prev.map((msg) => (msg.id === assistantMessage.id ? { ...msg, content: accumulatedContent } : msg)),
-          )
-        }
-      } else {
-        const response = await fetch("/api/calpro-chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: currentInput }),
-        })
-
-        const data = await response.json()
-
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: data.response || data.error || "No response received",
-        }
-
-        setMessages((prev) => [...prev, assistantMessage])
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === assistantMessage.id ? { ...msg, content: accumulatedContent } : msg)),
+        )
       }
 
       setAttachments([])
@@ -211,58 +172,18 @@ export function CalProClient() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)]">
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-background/50 backdrop-blur-sm mb-4">
-        <div className="flex items-center gap-2">
-          <Settings className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Mode:</span>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 bg-transparent">
-                {modelProvider === "openai" && <Sparkles className="w-4 h-4 mr-2" />}
-                {modelProvider === "groq" && <Sparkles className="w-4 h-4 mr-2" />}
-                {modelProvider === "local" && <Laptop className="w-4 h-4 mr-2" />}
-                {modelProvider === "keyword" && <FileText className="w-4 h-4 mr-2" />}
-                {modelProvider === "openai"
-                  ? "AI (OpenAI)"
-                  : modelProvider === "groq"
-                    ? "AI (Groq)"
-                    : modelProvider === "local"
-                      ? "AI (Local)"
-                      : "Keyword Search"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Search Mode</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setModelProvider("keyword")}>
-                <FileText className="w-4 h-4 mr-2" />
-                Keyword Search (No AI)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setModelProvider("openai")}>
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI (OpenAI GPT-4)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setModelProvider("groq")}>
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI (Groq)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setModelProvider("local")}>
-                <Laptop className="w-4 h-4 mr-2" />
-                AI (Local Ollama)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
       <div className="flex-1 overflow-y-auto space-y-4 mb-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-6 py-12">
-            <div className="text-center space-y-2 max-w-2xl">
-              <h2 className="text-2xl font-semibold text-balance">Welcome to Your Procurement Expert</h2>
-              <p className="text-muted-foreground text-balance leading-relaxed">
-                I specialize in California state procurement strategy and compliance for Generative AI products. Ask me
-                about regulations, vendor evaluation, RFPs, data privacy, or best practices.
+            <div className="text-center space-y-3 max-w-2xl">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Sparkles className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-3xl font-semibold text-balance">Hi! I'm CalPro, your AI procurement assistant</h2>
+              <p className="text-muted-foreground text-balance leading-relaxed text-lg">
+                I'm here to help you navigate California state GenAI procurement with confidence. Think of me as your
+                knowledgeable colleague who's always available to discuss regulations, review contracts, or brainstorm
+                strategies. Let's work together!
               </p>
             </div>
 
@@ -287,7 +208,7 @@ export function CalProClient() {
               >
                 {message.role === "assistant" && (
                   <div className="flex items-start justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground shrink-0 mt-1">
-                    <FileText className="w-5 h-5 mt-1.5" />
+                    <Sparkles className="w-5 h-5 mt-1.5" />
                   </div>
                 )}
 
@@ -313,7 +234,7 @@ export function CalProClient() {
             {isLoading && (
               <div className="flex gap-3 justify-start">
                 <div className="flex items-start justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground shrink-0 mt-1">
-                  <FileText className="w-5 h-5 mt-1.5" />
+                  <Sparkles className="w-5 h-5 mt-1.5" />
                 </div>
                 <div className="rounded-lg px-4 py-3 bg-card border">
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -391,7 +312,7 @@ export function CalProClient() {
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about procurement strategy, compliance, GenAI best practices, or paste a California government URL..."
+            placeholder="Ask me anything about GenAI procurement, compliance, or strategy..."
             className="min-h-[60px] resize-none"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -412,12 +333,8 @@ export function CalProClient() {
         </form>
 
         <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-          <AlertCircle className="w-3 h-3" />
-          <span>
-            {modelProvider === "keyword"
-              ? "Keyword search mode - no AI used. Switch to AI mode for intelligent responses."
-              : "AI mode active. Attach PDFs or URLs for analysis."}
-          </span>
+          <Sparkles className="w-3 h-3" />
+          <span>AI-powered assistant ready to help. I'll reference PDFs in the knowledge base automatically.</span>
         </div>
       </Card>
     </div>

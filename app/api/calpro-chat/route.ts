@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { searchKnowledgeBase, formatSearchResults } from "@/lib/knowledge-search"
+import { searchKnowledgeBase } from "@/lib/knowledge-search"
 import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineRelevantURLs } from "@/lib/web-scraper"
 import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
 import { streamText } from "ai"
@@ -25,24 +25,32 @@ const buildSystemContext = (knowledgeContext: string, urlContext: string, attach
   return `${calproSystemPrompt}
 
 ## Current Context
-You have access to a knowledge base containing California state procurement documents, policies, and guidelines. When answering questions, reference specific documents when available.
+You have access to a comprehensive knowledge base of California state procurement documents, policies, and guidelines. I always search this knowledge base automatically to provide you with accurate, sourced information.
 
 ${knowledgeContext}${urlContext}${attachmentContext}
 
-Remember to:
-- Cite specific sources (SCM Vol II sections, Executive Orders, PCC sections, duty statements, job descriptions)
-- Provide actionable guidance with clear next steps
-- Highlight compliance requirements and potential risks
-- Treat the user as a colleague seeking expert advice
-- Always remind users to verify critical information with their department's legal/procurement teams`
+## How to Respond
+- **Be conversational and engaging**: You're a helpful colleague, not a robot. Use "I" and "we" language naturally.
+- **Don't just dump text**: Synthesize information into a clear, structured response with insights and recommendations.
+- **Cite sources naturally**: Instead of just listing documents, reference them conversationally (e.g., "According to SCM Vol II Section 3.A, we need to...")
+- **Provide actionable guidance**: Always give clear next steps and practical advice.
+- **Be proactive**: Anticipate follow-up questions and offer additional insights.
+- **Show personality**: Be warm, supportive, and encouraging while maintaining professionalism.
+- **Structure your responses**: Use clear sections, bullet points, and formatting for readability.
+
+Remember: You're an assistant helping a colleague succeed, not just returning search results. Be helpful, insightful, and engaging!`
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { message, messages, modelProvider = "keyword" } = body
+    const { messages } = body
 
-    const userMessage = message || (messages && messages[messages.length - 1]?.content) || ""
+    if (!messages || messages.length === 0) {
+      return NextResponse.json({ error: "No messages provided" }, { status: 400 })
+    }
+
+    const userMessage = messages[messages.length - 1]?.content || ""
 
     if (!userMessage || typeof userMessage !== "string") {
       return NextResponse.json({ error: "Invalid message format" }, { status: 400 })
@@ -50,8 +58,11 @@ export async function POST(req: NextRequest) {
 
     console.log("[v0] CalPro query:", userMessage)
 
+    const searchResults = await searchKnowledgeBase(userMessage, "procurement")
+    console.log("[v0] CalPro found", searchResults.length, "relevant documents from knowledge base")
+
     let attachmentContext = ""
-    if (messages && messages[messages.length - 1]?.experimental_attachments) {
+    if (messages[messages.length - 1]?.experimental_attachments) {
       const attachments = messages[messages.length - 1].experimental_attachments
 
       for (const attachment of attachments) {
@@ -78,9 +89,6 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-
-    const searchResults = await searchKnowledgeBase(userMessage, "procurement")
-    console.log("[v0] CalPro search results:", searchResults.length, "documents found")
 
     if (searchResults.length === 0 && userProvidedURLs.length === 0) {
       console.log("[v0] No knowledge base results, searching California government websites...")
@@ -118,92 +126,34 @@ export async function POST(req: NextRequest) {
       urlContext = "\n\n## California Government Resources\n\n" + scrapedContent.join("\n\n---\n\n")
     }
 
-    if (messages && modelProvider !== "keyword") {
-      const contextualPrompt = buildSystemContext(knowledgeContext, urlContext, attachmentContext)
+    const contextualPrompt = buildSystemContext(knowledgeContext, urlContext, attachmentContext)
 
-      let model
-      if (modelProvider === "local") {
-        model = ollama("llama3")
-      } else if (modelProvider === "groq") {
-        if (!process.env.GROQ_API_KEY) {
-          return NextResponse.json(
-            { error: "Groq API Key missing. Switch to OpenAI or Keyword mode." },
-            { status: 400 },
-          )
-        }
-        model = groq("llama-3.3-70b-versatile")
-      } else if (modelProvider === "openai") {
-        if (!process.env.OPENAI_API_KEY) {
-          return NextResponse.json(
-            { error: "OpenAI API Key missing. Switch to Groq or Keyword mode." },
-            { status: 400 },
-          )
-        }
-        model = openai("gpt-4o-mini")
-      } else {
-        // Fallback to keyword search
-        const response = formatSearchResults(searchResults, userMessage)
-        return NextResponse.json({ response })
-      }
-
-      const result = streamText({
-        model,
-        system: contextualPrompt,
-        messages: messages.slice(0, -1).concat([{ role: "user", content: userMessage }]),
-        maxTokens: 2000,
-        temperature: 0.7,
-      })
-
-      return result.toTextStreamResponse()
+    let model
+    if (process.env.GROQ_API_KEY) {
+      model = groq("llama-3.3-70b-versatile")
+    } else if (process.env.OPENAI_API_KEY) {
+      model = openai("gpt-4o-mini")
+    } else {
+      return NextResponse.json(
+        { error: "No AI API keys configured. Please add GROQ_API_KEY or OPENAI_API_KEY to environment variables." },
+        { status: 500 },
+      )
     }
 
-    if (scrapedContent.length > 0) {
-      let response = `Based on current California government resources, here's what I found:\n\n${scrapedContent.join("\n\n---\n\n")}`
-
-      if (searchResults.length > 0) {
-        const additionalContext = formatSearchResults(searchResults, userMessage)
-        response +=
-          "\n\n**Additional context from procurement knowledge base:**\n\n" +
-          additionalContext +
-          "\n\n**Note:** This information has been cached and will be available for future searches. Always verify critical compliance information with official California state sources."
-      } else {
-        response +=
-          "\n\n**Note:** This information has been scraped from official California government websites and cached for future reference. Always verify critical compliance information with the original sources."
-      }
-
-      return NextResponse.json({ response })
-    }
-
-    if (searchResults.length === 0) {
-      return NextResponse.json({
-        response: `I searched both the procurement knowledge base and relevant California government websites but couldn't find specific information about "${userMessage}". 
-
-As a California State Procurement Expert, I can provide general guidance:
-
-For GenAI procurement in California, key considerations include:
-• Compliance with California Public Contract Code and State Administrative Manual (SAM)
-• Data privacy requirements under CCPA/CPRA
-• Security and risk assessment protocols
-• Vendor evaluation criteria including financial stability and technical capabilities
-• Contract terms covering SLAs, data rights, and IP ownership
-
-**To get more specific guidance:** Upload California procurement policy documents to the knowledge base, or try rephrasing your question with more specific terms.`,
-      })
-    }
-
-    const response = formatSearchResults(searchResults, userMessage)
-
-    return NextResponse.json({
-      response:
-        response +
-        "\n\n**Recommendation:** Always verify critical compliance information with official California state sources and consult with your legal team or relevant state agencies for final procurement decisions.",
+    const result = streamText({
+      model,
+      system: contextualPrompt,
+      messages: messages.slice(0, -1).concat([{ role: "user", content: userMessage }]),
+      maxTokens: 2000,
+      temperature: 0.7,
     })
+
+    return result.toTextStreamResponse()
   } catch (error) {
     console.error("[v0] CalPro chat error:", error)
     return NextResponse.json(
       {
         error: "Failed to process your request. Please try again.",
-        response: "Sorry, I encountered an error processing your request. Please try again or rephrase your question.",
       },
       { status: 500 },
     )
