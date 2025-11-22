@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { searchKnowledgeBase } from "@/lib/knowledge-search"
 import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineRelevantURLs } from "@/lib/web-scraper"
 import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
-import { streamText, convertToModelMessages, type UIMessage } from "ai"
+import { streamText, convertToModelMessages, consumeStream, type UIMessage } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 
 const openai = createOpenAI({
@@ -144,15 +144,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const prompt = convertToModelMessages(messages)
+
     const result = streamText({
       model,
       system: contextualPrompt,
-      messages: convertToModelMessages(messages),
+      prompt,
       maxOutputTokens: 2000,
       temperature: 0.7,
+      abortSignal: req.signal,
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toUIMessageStreamResponse({
+      consumeSseStream: consumeStream,
+    })
   } catch (error) {
     console.error("[v0] CalPro chat error:", error)
     return NextResponse.json(
