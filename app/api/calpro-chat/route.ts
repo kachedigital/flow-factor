@@ -1,50 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { searchKnowledgeBase } from "@/lib/knowledge-search"
-import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineRelevantURLs } from "@/lib/web-scraper"
-import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
-import { generateText } from "ai"
-import { createOpenAI } from "@ai-sdk/openai"
+import { searchCalProKnowledgeBase, formatCalProSearchResults } from "@/lib/calpro-knowledge-search"
 
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "",
-})
-
-const ollama = createOpenAI({
-  baseURL: "http://localhost:11434/v1",
-  apiKey: "ollama",
-})
-
-const groq = createOpenAI({
-  baseURL: "https://api.groq.com/openai/v1",
-  apiKey: process.env.GROQ_API_KEY || "",
-})
-
-export const maxDuration = 30
-
-const buildSystemContext = (knowledgeContext: string, urlContext: string, attachmentContext: string) => {
-  return `${calproSystemPrompt}
-
-## Current Context
-You have access to a comprehensive knowledge base of California state procurement documents, policies, and guidelines. I always search this knowledge base automatically to provide you with accurate, sourced information.
-
-${knowledgeContext}${urlContext}${attachmentContext}
-
-## How to Respond
-- **Be conversational and engaging**: You're a helpful colleague, not a robot. Use "I" and "we" language naturally.
-- **Don't just dump text**: Synthesize information into a clear, structured response with insights and recommendations.
-- **Cite sources naturally**: Instead of just listing documents, reference them conversationally (e.g., "According to SCM Vol II Section 3.A, we need to...")
-- **Provide actionable guidance**: Always give clear next steps and practical advice.
-- **Be proactive**: Anticipate follow-up questions and offer additional insights.
-- **Show personality**: Be warm, supportive, and encouraging while maintaining professionalism.
-- **Structure your responses**: Use clear sections, bullet points, and formatting for readability.
-
-Remember: You're an assistant helping a colleague succeed, not just returning search results. Be helpful, insightful, and engaging!`
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
-    const { messages }: { messages: any[] } = body
+    console.log("[v0] CalPro chat API called")
+
+    const { messages } = await request.json()
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: "No messages provided" }, { status: 400 })
@@ -59,152 +20,33 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("[v0] CalPro query:", userMessage)
-
-    const [searchResults, userProvidedURLs] = await Promise.all([
-      searchKnowledgeBase(userMessage, "procurement"),
-      extractURLsFromMessage(userMessage),
-    ])
-
-    console.log("[v0] Searching procurement knowledge base, found", searchResults.length, "PDFs")
-    console.log("[v0] Found user-provided California government URLs:", userProvidedURLs)
-
-    let attachmentContext = ""
-    if (messages[messages.length - 1]?.experimental_attachments) {
-      const attachments = messages[messages.length - 1].experimental_attachments
-
-      for (const attachment of attachments) {
-        if (attachment.type === "url" && attachment.url) {
-          const content = await fetchUrlContent(attachment.url)
-          attachmentContext += `\n\n${content}\n`
-        } else if (attachment.type === "pdf" && attachment.name) {
-          attachmentContext += `\n\n[PDF Document: ${attachment.name}]\n`
-        }
-      }
-    }
-
-    const scrapedContent: string[] = []
-
-    if (userProvidedURLs.length > 0) {
-      for (const url of userProvidedURLs) {
-        const scraped = await scrapeURL(url)
-        if (scraped) {
-          scrapedContent.push(`**Source: ${scraped.title}**\n${scraped.url}\n\n${scraped.content}`)
-          await cacheScrapedContent(scraped)
-        }
-      }
-    }
-
-    if (searchResults.length === 0 && userProvidedURLs.length === 0) {
-      console.log("[v0] No knowledge base results, searching California government websites...")
-      const relevantURLs = determineRelevantURLs(userMessage)
-      console.log("[v0] Identified relevant California government URLs:", relevantURLs)
-
-      for (const url of relevantURLs) {
-        const scraped = await scrapeURL(url)
-        if (scraped) {
-          const contentLower = scraped.content.toLowerCase()
-          const messageLower = userMessage.toLowerCase()
-          const keywords = messageLower.split(/\s+/).filter((word) => word.length > 3)
-          const relevanceScore = keywords.filter((keyword) => contentLower.includes(keyword)).length
-
-          if (relevanceScore > 0) {
-            scrapedContent.push(
-              `**Source: ${scraped.title}**\n${scraped.url}\n\n${scraped.content.substring(0, 2000)}...`,
-            )
-            await cacheScrapedContent(scraped)
-          }
-        }
-      }
-    }
-
-    let knowledgeContext = ""
-    if (searchResults.length > 0) {
-      knowledgeContext = "\n\n## Knowledge Base Documents\n\n"
-      searchResults.forEach((result: any) => {
-        knowledgeContext += `### ${result.filename}\nRelevance: ${result.relevance.toFixed(2)}\n\n${result.excerpt}\n\n---\n\n`
-      })
-    }
-
-    let urlContext = ""
-    if (scrapedContent.length > 0) {
-      urlContext = "\n\n## California Government Resources\n\n" + scrapedContent.join("\n\n---\n\n")
-    }
-
-    const contextualPrompt = buildSystemContext(knowledgeContext, urlContext, attachmentContext)
-
-    let model
-    if (process.env.GROQ_API_KEY) {
-      model = groq("llama-3.3-70b-versatile")
-      console.log("[v0] Using Groq model")
-    } else if (process.env.OPENAI_API_KEY) {
-      model = openai("gpt-4o-mini")
-      console.log("[v0] Using OpenAI model")
-    } else {
-      console.log("[v0] No AI API keys found")
-      return NextResponse.json(
-        {
-          response:
-            "I apologize, but the AI service is not configured. Please contact your administrator to add API keys.",
-        },
-        { status: 200 },
-      )
-    }
-
-    console.log("[v0] Generating AI response...")
+    console.log("[v0] Searching CalPro knowledge base...")
 
     try {
-      const { text } = await generateText({
-        model,
-        system: contextualPrompt,
-        prompt: userMessage,
-        maxTokens: 2000,
-        temperature: 0.7,
-      })
+      const searchResults = await searchCalProKnowledgeBase(userMessage)
+      console.log(`[v0] Found ${searchResults.length} relevant procurement documents`)
 
-      console.log("[v0] Generated response successfully, length:", text.length)
+      const response = formatCalProSearchResults(searchResults, userMessage)
 
-      return NextResponse.json(
-        {
-          response: text,
-        },
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
-    } catch (genError: any) {
-      console.error("[v0] generateText error details:", {
-        message: genError?.message,
-        cause: genError?.cause,
-        stack: genError?.stack?.split("\n").slice(0, 3).join("\n"),
+      console.log("[v0] Returning CalPro search results")
+      return NextResponse.json({ response })
+    } catch (searchError) {
+      console.error("[v0] CalPro knowledge base search error:", searchError)
+
+      return NextResponse.json({
+        response:
+          "I apologize, but I encountered an error searching the procurement knowledge base. Please ensure the calpro_documents table exists and contains procurement data. You can create it by running the SQL script in scripts/create-calpro-table.sql",
       })
-      throw genError
     }
-  } catch (error: any) {
-    console.error("[v0] CalPro chat error:", error?.message || error)
-    console.error("[v0] Full error:", JSON.stringify(error, null, 2))
+  } catch (error) {
+    console.error("[v0] CalPro chat error:", error)
 
     return NextResponse.json(
       {
         response:
-          "I apologize, but I encountered an error processing your request. Please try again or rephrase your question.",
+          "I apologize, but I encountered an unexpected error. Please ensure the calpro_documents table exists in your database and try again.",
       },
       { status: 200 },
     )
-  }
-}
-
-async function fetchUrlContent(url: string): Promise<string> {
-  try {
-    const scraped = await scrapeURL(url)
-    if (scraped) {
-      await cacheScrapedContent(scraped)
-      return `**Source: ${scraped.title}**\n${scraped.url}\n\n${scraped.content.substring(0, 5000)}`
-    }
-    return `[Error fetching URL: ${url}]`
-  } catch (error) {
-    return `[Error fetching URL: ${url}]`
   }
 }
