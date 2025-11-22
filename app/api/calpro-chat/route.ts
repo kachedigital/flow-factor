@@ -152,36 +152,39 @@ export async function POST(req: NextRequest) {
 
     console.log("[v0] Generating AI response...")
 
-    let text
     try {
-      const result = await generateText({
+      const { text } = await generateText({
         model,
         system: contextualPrompt,
         prompt: userMessage,
         maxTokens: 2000,
         temperature: 0.7,
       })
-      text = result.text
-      console.log("[v0] Generated response successfully, length:", text.length)
-    } catch (genError: any) {
-      console.error("[v0] generateText error:", genError?.message || genError)
-      throw new Error(`AI generation failed: ${genError?.message || "Unknown error"}`)
-    }
 
-    return NextResponse.json(
-      {
-        response: text,
-      },
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
+      console.log("[v0] Generated response successfully, length:", text.length)
+
+      return NextResponse.json(
+        {
+          response: text,
         },
-      },
-    )
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      )
+    } catch (genError: any) {
+      console.error("[v0] generateText error details:", {
+        message: genError?.message,
+        cause: genError?.cause,
+        stack: genError?.stack?.split("\n").slice(0, 3).join("\n"),
+      })
+      throw genError
+    }
   } catch (error: any) {
-    console.error("[v0] CalPro chat error:", error?.message || String(error))
-    console.error("[v0] Full error:", error)
+    console.error("[v0] CalPro chat error:", error?.message || error)
+    console.error("[v0] Full error:", JSON.stringify(error, null, 2))
 
     return NextResponse.json(
       {
