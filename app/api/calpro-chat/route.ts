@@ -60,8 +60,13 @@ export async function POST(req: NextRequest) {
 
     console.log("[v0] CalPro query:", userMessage)
 
-    const searchResults = await searchKnowledgeBase(userMessage, "procurement")
+    const [searchResults, userProvidedURLs] = await Promise.all([
+      searchKnowledgeBase(userMessage, "procurement"),
+      extractURLsFromMessage(userMessage),
+    ])
+
     console.log("[v0] Searching procurement knowledge base, found", searchResults.length, "PDFs")
+    console.log("[v0] Found user-provided California government URLs:", userProvidedURLs)
 
     let attachmentContext = ""
     if (messages[messages.length - 1]?.experimental_attachments) {
@@ -77,12 +82,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const userProvidedURLs = extractURLsFromMessage(userMessage)
     const scrapedContent: string[] = []
 
     if (userProvidedURLs.length > 0) {
-      console.log("[v0] Found user-provided California government URLs:", userProvidedURLs)
-
       for (const url of userProvidedURLs) {
         const scraped = await scrapeURL(url)
         if (scraped) {
