@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { searchKnowledgeBase } from "@/lib/knowledge-search"
 import { extractURLsFromMessage, scrapeURL, cacheScrapedContent, determineRelevantURLs } from "@/lib/web-scraper"
 import { calproSystemPrompt } from "@/lib/calpro-system-prompt"
-import { streamText, convertToModelMessages, consumeStream, type UIMessage } from "ai"
+import { generateText } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
 
 const openai = createOpenAI({
@@ -44,7 +44,7 @@ Remember: You're an assistant helping a colleague succeed, not just returning se
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { messages }: { messages: UIMessage[] } = body
+    const { messages }: { messages: any[] } = body
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: "No messages provided" }, { status: 400 })
@@ -144,27 +144,25 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const prompt = convertToModelMessages(messages)
-
-    const result = streamText({
+    const { text } = await generateText({
       model,
       system: contextualPrompt,
-      prompt,
-      maxOutputTokens: 2000,
+      prompt: userMessage,
+      maxTokens: 2000,
       temperature: 0.7,
       abortSignal: req.signal,
     })
 
-    return result.toUIMessageStreamResponse({
-      consumeSseStream: consumeStream,
-    })
+    console.log("[v0] Generated response successfully")
+
+    return NextResponse.json({ response: text })
   } catch (error) {
     console.error("[v0] CalPro chat error:", error)
     return NextResponse.json(
       {
-        error: "Failed to process your request. Please try again.",
+        response: "I apologize, but I encountered an error. Please try again.",
       },
-      { status: 500 },
+      { status: 200 },
     )
   }
 }

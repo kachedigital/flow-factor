@@ -129,32 +129,18 @@ export function CalProClient() {
         throw new Error("Failed to get response")
       }
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      let accumulatedContent = ""
+      const data = await response.json()
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "",
+        content: data.response,
       }
 
       setMessages((prev) => [...prev, assistantMessage])
-
-      while (true) {
-        const { done, value } = await reader!.read()
-        if (done) break
-
-        const chunk = decoder.decode(value)
-        accumulatedContent += chunk
-
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === assistantMessage.id ? { ...msg, content: accumulatedContent } : msg)),
-        )
-      }
-
       setAttachments([])
     } catch (error) {
+      console.error("[v0] CalPro error:", error)
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
