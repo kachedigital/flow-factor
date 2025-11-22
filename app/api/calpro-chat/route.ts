@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const result = streamText({
+    const result = await streamText({
       model,
       system: contextualPrompt,
       messages: messages.slice(0, -1).concat([{ role: "user", content: userMessage }]),
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
       temperature: 0.7,
     })
 
-    return result.toTextStreamResponse()
+    return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("[v0] CalPro chat error:", error)
     return NextResponse.json(
