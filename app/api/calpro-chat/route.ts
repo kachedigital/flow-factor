@@ -152,15 +152,21 @@ export async function POST(req: NextRequest) {
 
     console.log("[v0] Generating AI response...")
 
-    const { text } = await generateText({
-      model,
-      system: contextualPrompt,
-      prompt: userMessage,
-      maxTokens: 2000,
-      temperature: 0.7,
-    })
-
-    console.log("[v0] Generated response successfully, length:", text.length)
+    let text
+    try {
+      const result = await generateText({
+        model,
+        system: contextualPrompt,
+        prompt: userMessage,
+        maxTokens: 2000,
+        temperature: 0.7,
+      })
+      text = result.text
+      console.log("[v0] Generated response successfully, length:", text.length)
+    } catch (genError: any) {
+      console.error("[v0] generateText error:", genError?.message || genError)
+      throw new Error(`AI generation failed: ${genError?.message || "Unknown error"}`)
+    }
 
     return NextResponse.json(
       {
@@ -174,7 +180,8 @@ export async function POST(req: NextRequest) {
       },
     )
   } catch (error: any) {
-    console.error("[v0] CalPro chat error:", error?.message || error)
+    console.error("[v0] CalPro chat error:", error?.message || String(error))
+    console.error("[v0] Full error:", error)
 
     return NextResponse.json(
       {
