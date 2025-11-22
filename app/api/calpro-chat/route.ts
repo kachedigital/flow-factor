@@ -135,14 +135,22 @@ export async function POST(req: NextRequest) {
     let model
     if (process.env.GROQ_API_KEY) {
       model = groq("llama-3.3-70b-versatile")
+      console.log("[v0] Using Groq model")
     } else if (process.env.OPENAI_API_KEY) {
       model = openai("gpt-4o-mini")
+      console.log("[v0] Using OpenAI model")
     } else {
+      console.log("[v0] No AI API keys found")
       return NextResponse.json(
-        { error: "No AI API keys configured. Please add GROQ_API_KEY or OPENAI_API_KEY to environment variables." },
-        { status: 500 },
+        {
+          response:
+            "I apologize, but the AI service is not configured. Please contact your administrator to add API keys.",
+        },
+        { status: 200 },
       )
     }
+
+    console.log("[v0] Generating AI response...")
 
     const { text } = await generateText({
       model,
@@ -150,17 +158,28 @@ export async function POST(req: NextRequest) {
       prompt: userMessage,
       maxTokens: 2000,
       temperature: 0.7,
-      abortSignal: req.signal,
     })
 
-    console.log("[v0] Generated response successfully")
+    console.log("[v0] Generated response successfully, length:", text.length)
 
-    return NextResponse.json({ response: text })
-  } catch (error) {
-    console.error("[v0] CalPro chat error:", error)
     return NextResponse.json(
       {
-        response: "I apologize, but I encountered an error. Please try again.",
+        response: text,
+      },
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    )
+  } catch (error: any) {
+    console.error("[v0] CalPro chat error:", error?.message || error)
+
+    return NextResponse.json(
+      {
+        response:
+          "I apologize, but I encountered an error processing your request. Please try again or rephrase your question.",
       },
       { status: 200 },
     )
