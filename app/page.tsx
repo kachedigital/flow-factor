@@ -3,7 +3,7 @@
 import { useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, ArrowRight, Accessibility, Activity, Bot } from "lucide-react" // Brain and Timer commented out from imports if not used elsewhere
 import { motion, useInView } from "framer-motion"
@@ -185,53 +185,41 @@ export default function HomePage() {
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
-                        <div className="p-2 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                        <div className="text-primary">
                           {tool.icon}
                         </div>
-                        <Badge variant="secondary">{tool.category}</Badge>
+                        <Badge variant="outline">{tool.category}</Badge>
                       </div>
-                      <Badge variant="outline" className="text-green-600 border-green-600">
+                      <Badge className="bg-green-100 text-green-800">
                         {tool.status}
                       </Badge>
                     </div>
-                    <CardTitle className="text-xl">{tool.title}</CardTitle>
-                    <CardDescription className="text-sm">{tool.description}</CardDescription>
+                    <CardTitle className="group-hover:text-primary transition-colors">{tool.title}</CardTitle>
+                    <CardDescription>{tool.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-2">
-                      {tool.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-start space-x-2">
-                          <CheckCircle className="h-3 w-3 text-primary mt-1 flex-shrink-0" />
-                          <span className="text-xs text-muted-foreground">{feature}</span>
-                        </div>
-                      ))}
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">Key Features:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {tool.features.map((feature, featureIndex) => (
+                          <Badge key={featureIndex} variant="secondary" className="text-xs">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
-                      variant="outline"
-                      asChild
-                    >
-                      <Link href={tool.link}>
-                        Try {tool.title}
+                    <Link href={tool.link} className="block">
+                      <Button className="w-full group-hover:bg-primary/90 transition-colors">
+                        Launch Tool
                         <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
+                      </Button>
+                    </Link>
+                  </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
 
-          <div className="flex justify-center mt-12">
-            <Button size="lg" asChild>
-              <Link href="/tools">
-                View All Tools
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 

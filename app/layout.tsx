@@ -14,7 +14,7 @@ export const metadata = {
   title: "FlowFactor - Human Factors Engineering Consultant",
   description:
     "FlowFactor provides expert Human Factors Engineering consulting services, specializing in AI + Human Collaboration, Neuroinclusive Design, Telework, and Industrial UX.",
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -49,7 +49,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans`}>
+      <body className={`${inter.variable} font-sans`} suppressHydrationWarning>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <ClientWrapper>{children}</ClientWrapper>
