@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
@@ -36,22 +37,14 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
+      setIsScrolled(window.scrollY > 10)
     }
-
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   useEffect(() => {
-    // Check initial auth state
     checkUser()
-
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -60,27 +53,22 @@ export function Navbar() {
         setAuthDialogOpen(false)
       }
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
   const checkUser = async () => {
     try {
       if (!supabase) {
-        console.error("Supabase client not available")
         setUser(null)
         return
       }
-
       const {
         data: { user },
         error,
       } = await supabase.auth.getUser()
-
       if (error && error.message !== "Auth session missing!") {
         console.error("Error getting user:", error)
       }
-
       setUser(user || null)
     } catch (error) {
       if (error instanceof Error && !error.message.includes("Auth session missing")) {
@@ -103,51 +91,65 @@ export function Navbar() {
     }
   }
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen)
-  }
+  const toggleMenu = () => setIsOpen(!isOpen)
+  const closeMenu = () => setIsOpen(false)
 
-  const closeMenu = () => {
-    setIsOpen(false)
-  }
-
-  // Navigation links without dropdowns
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
+    { name: "Services", href: "/services" },
     { name: "Tools", href: "/tools" },
+    { name: "Portfolio", href: "/portfolio" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact", href: "/contact" },
   ]
 
   return (
-    <header className={`sticky top-0 z-50 w-full bg-white shadow`}>
+    <header
+      className={`sticky top-0 z-50 w-full transition-shadow duration-200 bg-background ${
+        isScrolled ? "shadow-md" : "shadow-sm"
+      }`}
+    >
       <div className="container mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
-          <div className="flex-1">
-            <Link href="/" className="flex items-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                FlowFactor
-              </h1>
+          <div className="flex-shrink-0">
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src="/images/kachedigital-logo.png"
+                alt="KacheDigital logo"
+                width={36}
+                height={36}
+                className="rounded-full"
+              />
+              <span className="text-xl font-heading font-bold">
+                <span className="text-kd-cyan">Kache</span>
+                <span className="text-kd-magenta">Digital</span>
+              </span>
             </Link>
           </div>
-          <nav className="hidden md:flex items-center space-x-6">
+
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === link.href ? "text-primary font-semibold" : ""
+                className={`text-sm font-medium transition-colors hover:text-kd-cyan ${
+                  pathname === link.href
+                    ? "text-kd-cyan font-semibold"
+                    : "text-foreground/80"
                 }`}
               >
                 {link.name}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2">
+
+          <div className="flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-2">
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
                       <User className="h-4 w-4" />
                       <span className="max-w-[100px] truncate">{user?.email || "User"}</span>
                     </Button>
@@ -174,7 +176,10 @@ export function Navbar() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Welcome to FlowFactor</DialogTitle>
+                      <DialogTitle className="font-heading">
+                        Welcome to <span className="text-kd-cyan">Kache</span>
+                        <span className="text-kd-magenta">Digital</span>
+                      </DialogTitle>
                       <DialogDescription>
                         Sign in to your account or create a new one to access all features.
                       </DialogDescription>
@@ -196,7 +201,8 @@ export function Navbar() {
               )}
               <ModeToggle />
             </div>
-            <button className="md:hidden" onClick={toggleMenu} aria-label="Toggle menu">
+
+            <button className="lg:hidden" onClick={toggleMenu} aria-label="Toggle menu">
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
@@ -204,22 +210,24 @@ export function Navbar() {
       </div>
 
       {isOpen && (
-        <div className="md:hidden bg-background border-b">
+        <div className="lg:hidden bg-background border-t">
           <div className="container mx-auto px-4 py-4">
-            <nav className="flex flex-col space-y-4">
+            <nav className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    pathname === link.href ? "text-primary font-semibold" : ""
+                  className={`text-sm font-medium py-1 transition-colors hover:text-kd-cyan ${
+                    pathname === link.href
+                      ? "text-kd-cyan font-semibold"
+                      : "text-foreground/80"
                   }`}
                   onClick={closeMenu}
                 >
                   {link.name}
                 </Link>
               ))}
-              <div className="flex flex-col space-y-2 pt-2">
+              <div className="flex flex-col gap-2 pt-3 border-t">
                 {user ? (
                   <>
                     <div className="text-sm text-muted-foreground">Signed in as {user.email}</div>
@@ -238,7 +246,10 @@ export function Navbar() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Welcome to FlowFactor</DialogTitle>
+                        <DialogTitle className="font-heading">
+                          Welcome to <span className="text-kd-cyan">Kache</span>
+                          <span className="text-kd-magenta">Digital</span>
+                        </DialogTitle>
                         <DialogDescription>
                           Sign in to your account or create a new one to access all features.
                         </DialogDescription>
@@ -258,9 +269,7 @@ export function Navbar() {
                     </DialogContent>
                   </Dialog>
                 )}
-                <div className="flex items-center space-x-2">
-                  <ModeToggle />
-                </div>
+                <ModeToggle />
               </div>
             </nav>
           </div>

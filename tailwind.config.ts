@@ -1,6 +1,3 @@
-// Assuming a standard shadcn/ui tailwind.config.ts setup
-// For brevity, content is omitted if it's standard.
-// Ensure it includes the necessary plugins and theme extensions.
 import type { Config } from "tailwindcss"
 
 const config = {
@@ -22,6 +19,12 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-open-sans)", "system-ui", "sans-serif"],
+        heading: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+        accent: ["var(--font-poppins)", "system-ui", "sans-serif"],
+        mono: ["ui-monospace", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -55,6 +58,16 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        kd: {
+          cyan: "hsl(var(--kd-cyan))",
+          magenta: "hsl(var(--kd-magenta))",
+          "deep-purple": "hsl(var(--kd-deep-purple))",
+          "muted-purple": "hsl(var(--kd-muted-purple))",
+          teal: "hsl(var(--kd-teal))",
+          "light-cyan": "hsl(var(--kd-light-cyan))",
+          coral: "hsl(var(--kd-coral))",
+          violet: "hsl(var(--kd-violet))",
         },
       },
       borderRadius: {

@@ -1,32 +1,31 @@
-import { FeaturedTools } from "./featured-tools" // Ensure FeaturedTools is imported
+import { FeaturedTools } from "./featured-tools"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Our Tools | FlowFactor",
-  description: "Explore FlowFactor's suite of tools designed for neurodiversity, productivity, and wellness.",
+  title: "Tools | KacheDigital",
+  description:
+    "Open-source tools for accessibility testing, CSS prototyping, and neuroinclusive productivity -- built by KacheDigital.",
 }
 
 export default function ToolsPage() {
   return (
-    <div className="py-12 bg-background">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">Explore Our Suite of Tools</h1>
-          <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Discover innovative solutions designed to enhance productivity, wellness, and accessibility for
-            neurodivergent individuals and beyond.
+    <main className="py-20 md:py-28 bg-background">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-14 max-w-3xl mx-auto">
+          <p className="font-accent text-sm uppercase tracking-widest text-kd-cyan mb-3">
+            Our Tools
+          </p>
+          <h1 className="text-4xl md:text-5xl font-heading font-bold tracking-tight text-balance">
+            Built for Developers, Designers & All Brains
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
+            Free and open-source tools we built to make web development more
+            accessible, inclusive, and efficient. More tools launching soon.
           </p>
         </div>
 
-        {/* This is where the list of tool cards is rendered */}
         <FeaturedTools />
-
-        {/* 
-          The <ComingSoonClient /> was here incorrectly. 
-          It's specific to the /tools/focusflow/coming-soon page.
-          It has been removed.
-        */}
       </div>
-    </div>
+    </main>
   )
 }

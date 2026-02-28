@@ -5,47 +5,57 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 264 60% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 264 60% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 212 50% 30%; /* Updated from 35% */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 192 50% 44%; /* Updated from 54% */
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --accent: 24 100% 60%;
-    --accent-foreground: 210 40% 98%;
+    --popover-foreground: 264 60% 10%;
+    --primary: 264 80% 15%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 189 88% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 310 100% 57%;
+    --accent-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 212 50% 30%; /* Updated from 35% to match primary */
+    --ring: 189 88% 47%;
     --radius: 0.5rem;
+
+    /* KacheDigital brand tokens */
+    --kd-cyan: 189 88% 47%;
+    --kd-magenta: 310 100% 57%;
+    --kd-deep-purple: 264 80% 15%;
+    --kd-muted-purple: 262 24% 41%;
+    --kd-teal: 191 71% 38%;
+    --kd-light-cyan: 183 72% 63%;
+    --kd-coral: 22 100% 67%;
+    --kd-violet: 280 55% 48%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 212 50% 45%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 192 50% 44%;
-    --secondary-foreground: 210 40% 98%;
-    --accent: 24 100% 50%;
-    --accent-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --background: 264 60% 5%;
+    --foreground: 0 0% 95%;
+    --card: 264 50% 8%;
+    --card-foreground: 0 0% 95%;
+    --popover: 264 50% 8%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 189 88% 47%;
+    --primary-foreground: 264 60% 5%;
+    --secondary: 310 100% 57%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 189 88% 47%;
+    --accent-foreground: 264 60% 5%;
+    --muted: 264 30% 15%;
     --muted-foreground: 215 20.2% 65.1%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212 50% 45%;
+    --border: 264 30% 18%;
+    --input: 264 30% 18%;
+    --ring: 189 88% 47%;
   }
 }
 
@@ -62,24 +72,39 @@
   h4,
   h5,
   h6 {
-    @apply font-heading;
+    font-family: var(--font-montserrat), system-ui, sans-serif;
+    @apply font-bold tracking-tight;
   }
   p,
-  span,
-  div,
   li {
-    @apply font-body;
+    font-family: var(--font-open-sans), system-ui, sans-serif;
   }
 }
 
-/* Define heading and body font styles */
 @layer components {
   .font-heading {
-    font-family: var(--font-poppins);
+    font-family: var(--font-montserrat), system-ui, sans-serif;
   }
 
   .font-body {
-    font-family: var(--font-open-sans);
+    font-family: var(--font-open-sans), system-ui, sans-serif;
+  }
+
+  .font-accent {
+    font-family: var(--font-poppins), system-ui, sans-serif;
+  }
+
+  .kd-gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--kd-cyan)), hsl(var(--kd-magenta)));
+  }
+
+  .kd-gradient-bg {
+    background: linear-gradient(135deg, hsl(var(--kd-cyan)), hsl(var(--kd-magenta)));
+  }
+
+  .kd-gradient-border {
+    border-image: linear-gradient(135deg, hsl(var(--kd-cyan)), hsl(var(--kd-magenta))) 1;
   }
 }
 

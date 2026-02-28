@@ -1,149 +1,257 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ArrowRight, Mail, CheckCircle } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Users,
+  Lightbulb,
+  Layers,
+  Target,
+  Heart,
+  ArrowRight,
+} from "lucide-react"
 import { motion } from "framer-motion"
 
-export default function ComingSoonPage() {
-  const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Add email submission logic
-    console.log("[v0] Email submitted:", email)
-    setIsSubmitted(true)
-    setTimeout(() => {
-      setEmail("")
-      setIsSubmitted(false)
-    }, 3000)
-  }
+const stagger = {
+  visible: { transition: { staggerChildren: 0.1 } },
+}
 
+const values = [
+  {
+    icon: Users,
+    title: "Human-Centered Design",
+    description:
+      "Every solution begins with the people who will use it. We design for real humans with real needs, not theoretical personas.",
+    color: "text-kd-cyan",
+    bgColor: "bg-kd-cyan/10",
+  },
+  {
+    icon: Lightbulb,
+    title: "Augmented Intelligence",
+    description:
+      "We believe AI should amplify human capability, not replace it. Our frameworks ensure technology serves people.",
+    color: "text-kd-magenta",
+    bgColor: "bg-kd-magenta/10",
+  },
+  {
+    icon: Layers,
+    title: "Inclusive by Default",
+    description:
+      "Accessibility and neuroinclusion are not afterthoughts. They are embedded in every layer of our process.",
+    color: "text-kd-violet",
+    bgColor: "bg-kd-violet/10",
+  },
+  {
+    icon: Target,
+    title: "Evidence-Based Solutions",
+    description:
+      "Our strategies are grounded in research, empirical data, and real-world testing -- not trends or guesswork.",
+    color: "text-kd-teal",
+    bgColor: "bg-kd-teal/10",
+  },
+  {
+    icon: Heart,
+    title: "Injury-Informed Insight",
+    description:
+      "Lived experience with neurodiversity and recovery informs our unique perspective on inclusive, resilient design.",
+    color: "text-kd-coral",
+    bgColor: "bg-kd-coral/10",
+  },
+]
+
+export default function AboutPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Main Content */}
-      <section className="flex-1 flex items-center justify-center px-4 py-12 md:py-24">
-        <div className="container max-w-4xl">
+    <main>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-background">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(var(--kd-cyan)/0.06),_transparent_50%)]" />
+        <div className="container mx-auto px-6 py-20 md:py-28 relative">
           <motion.div
-            className="flex flex-col items-center text-center space-y-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto text-center"
+            initial="hidden"
+            animate="visible"
+            variants={stagger}
           >
-            {/* Badge */}
-            <motion.div
-              className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+            <motion.p
+              variants={fadeUp}
+              className="font-accent text-sm uppercase tracking-widest text-kd-cyan mb-3"
             >
-              Coming Soon
-            </motion.div>
+              About Us
+            </motion.p>
+            <motion.h1
+              variants={fadeUp}
+              className="text-4xl md:text-5xl font-heading font-bold leading-tight text-balance"
+            >
+              Strategy. Inclusion.{" "}
+              <span className="kd-gradient-text">Digital Resilience.</span>
+            </motion.h1>
+            <motion.p
+              variants={fadeUp}
+              className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto text-pretty"
+            >
+              KacheDigital is a digital agency, consulting firm, and tech studio
+              that builds digital fortresses -- systems that are inclusive,
+              human-centered, and resilient by design.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Main Heading */}
-            <motion.div
-              className="space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+      {/* Story */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container mx-auto px-6">
+          <motion.div
+            className="max-w-3xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger}
+          >
+            <motion.p
+              variants={fadeUp}
+              className="font-accent text-sm uppercase tracking-widest text-kd-magenta mb-3"
             >
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-balance">
-                Something Innovative
-                <br />
-                <span className="text-primary">Is On The Way</span>
-              </h1>
-              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl text-pretty leading-relaxed">
-                We're crafting an experience that will transform how you think about human factors engineering and
-                accessibility. Stay tuned for something extraordinary.
+              Our Story
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl md:text-4xl font-heading font-bold mb-6 text-balance"
+            >
+              Born from Expertise, Shaped by Experience
+            </motion.h2>
+            <motion.div variants={fadeUp} className="space-y-5 text-muted-foreground leading-relaxed">
+              <p>
+                KacheDigital was founded on a simple belief: technology should
+                work for everyone, not just the majority. With deep roots in
+                human factors engineering, accessibility, and AI strategy, we
+                bridge the gap between cutting-edge technology and the people it
+                serves.
               </p>
-            </motion.div>
-
-            {/* Email Signup Form */}
-            <motion.div
-              className="w-full max-w-md space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            >
-              {!isSubmitted ? (
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="pl-10 h-12 bg-background border-muted-foreground/20 focus:border-primary"
-                    />
-                  </div>
-                  <Button type="submit" size="lg" className="h-12 px-6 bg-primary hover:bg-primary/90">
-                    Notify Me
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
-              ) : (
-                <motion.div
-                  className="flex items-center justify-center gap-2 text-primary font-medium py-3"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CheckCircle className="h-5 w-5" />
-                  <span>Thanks! We'll keep you updated.</span>
-                </motion.div>
-              )}
-              <p className="text-sm text-muted-foreground">Join the waitlist to be the first to know when we launch.</p>
-            </motion.div>
-
-            {/* Feature Hints */}
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 w-full max-w-3xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            >
-              <div className="flex flex-col items-center text-center space-y-2 p-4 rounded-lg bg-muted/30 border border-muted">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary">1</span>
-                </div>
-                <h3 className="font-semibold">Innovative Tools</h3>
-                <p className="text-sm text-muted-foreground">Cutting-edge solutions for modern challenges</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center space-y-2 p-4 rounded-lg bg-muted/30 border border-muted">
-                <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-secondary">2</span>
-                </div>
-                <h3 className="font-semibold">Human-Centered</h3>
-                <p className="text-sm text-muted-foreground">Designed with accessibility at the core</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center space-y-2 p-4 rounded-lg bg-muted/30 border border-muted">
-                <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-accent">3</span>
-                </div>
-                <h3 className="font-semibold">Expert Insights</h3>
-                <p className="text-sm text-muted-foreground">Backed by years of professional experience</p>
-              </div>
+              <p>
+                Our approach is informed by lived experience with
+                neurodiversity, workplace injury, and the realities of digital
+                transformation. This gives us a unique perspective -- we
+                understand both the strategic imperatives of organizations and
+                the human needs that technology must serve.
+              </p>
+              <p>
+                We call our approach{" "}
+                <span className="text-foreground font-medium">
+                  &ldquo;Building Digital Fortresses&rdquo;
+                </span>{" "}
+                -- creating systems with an invisible shield of governance,
+                compliance, and inclusive design so robust that organizations can
+                innovate with confidence.
+              </p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-muted py-6">
-        <div className="container px-4">
-          <p className="text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} FlowFactor. All rights reserved.
-          </p>
+      {/* Values */}
+      <section className="py-20 md:py-28 bg-background">
+        <div className="container mx-auto px-6">
+          <motion.div
+            className="text-center mb-14"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger}
+          >
+            <motion.p
+              variants={fadeUp}
+              className="font-accent text-sm uppercase tracking-widest text-kd-cyan mb-2"
+            >
+              What Drives Us
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl md:text-4xl font-heading font-bold text-balance"
+            >
+              Our Core Values
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger}
+          >
+            {values.map((value) => (
+              <motion.div key={value.title} variants={fadeUp}>
+                <Card className="h-full border border-border/60 bg-background">
+                  <CardContent className="p-6">
+                    <div
+                      className={`w-12 h-12 rounded-lg ${value.bgColor} flex items-center justify-center mb-4`}
+                    >
+                      <value.icon className={`h-6 w-6 ${value.color}`} />
+                    </div>
+                    <h3 className="text-base font-heading font-semibold mb-2">
+                      {value.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {value.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </footer>
-    </div>
+      </section>
+
+      {/* Team Placeholder */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container mx-auto px-6">
+          <motion.div
+            className="text-center max-w-2xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            variants={stagger}
+          >
+            <motion.p
+              variants={fadeUp}
+              className="font-accent text-sm uppercase tracking-widest text-kd-magenta mb-2"
+            >
+              The Team
+            </motion.p>
+            <motion.h2
+              variants={fadeUp}
+              className="text-3xl md:text-4xl font-heading font-bold mb-4 text-balance"
+            >
+              Meet the People Behind the Fortress
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="text-muted-foreground leading-relaxed mb-8"
+            >
+              Our team brings together expertise in human factors engineering,
+              AI strategy, accessibility compliance, and inclusive design. Team
+              profiles coming soon.
+            </motion.p>
+            <motion.div variants={fadeUp}>
+              <Button
+                asChild
+                className="bg-kd-cyan hover:bg-kd-cyan/90 text-white font-heading font-semibold"
+              >
+                <Link href="/contact">
+                  Work With Us
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+    </main>
   )
 }
