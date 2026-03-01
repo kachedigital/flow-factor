@@ -16,14 +16,12 @@ export default function HeroSection() {
     return (
         <section
             ref={ref}
-            className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-[#FAFAFA]"
+            className="relative w-full min-h-[85vh] flex items-center justify-center bg-[#FAFAFA]"
         >
-            {/* THE PARALLAX LAYER
-        Senior: This MUST be the version of pbg15 where the black background has been removed.
-      */}
+            {/* THE PARALLAX LAYER — Massive scale, bleeds into Capabilities */}
             <motion.div
                 style={{ y: backgroundY }}
-                className="absolute right-0 top-[-10%] z-0 w-full md:w-1/2 h-[150%] opacity-70 pointer-events-none"
+                className="absolute right-0 top-[-20%] z-0 w-[150vw] md:w-[80vw] h-[250%] opacity-70 pointer-events-none"
             >
                 <div
                     className="w-full h-full bg-no-repeat bg-contain bg-right-top"
