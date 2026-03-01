@@ -1,43 +1,14 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
-
 export default function HeroSection() {
-    const ref = useRef(null);
-
-    const { scrollYProgress } = useScroll({
-        target: ref,
-        offset: ["start start", "end start"],
-    });
-
-    // Smooth, elegant parallax (30% speed ratio)
-    const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-
     return (
-        <section
-            ref={ref}
-            className="relative w-full min-h-[85vh] flex items-center overflow-hidden bg-[#FAFAFA]"
-        >
-            {/* THE HERO ASSET: pbg15 (Transparent PNG) */}
-            <motion.div
-                style={{ y: backgroundY }}
-                // Container made much wider, taller, and pushed off the right edge
-                className="absolute right-[-10%] md:right-[-15%] top-[-20%] z-0 w-[150%] md:w-[80vw] h-[150%] opacity-20 md:opacity-85 pointer-events-none"
-            >
-                <div
-                    // Swapped bg-contain for bg-cover, anchored right, added scale
-                    className="w-full h-full bg-no-repeat bg-cover bg-right-center transform md:scale-110 origin-right"
-                    style={{ backgroundImage: "url('/pbg15-transparent.png')" }}
-                />
-            </motion.div>
+        <section className="relative w-full min-h-[85vh] flex items-center bg-[#FAFAFA] overflow-hidden">
 
-            {/* FOREGROUND CONTENT */}
-            {/* Container is full width, but content is constrained to the left */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 flex flex-col justify-center">
+            {/* Main Content Container - Flex row on desktop, column on mobile */}
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center justify-between gap-12">
 
-                {/* Typography Block */}
-                <div className="max-w-2xl space-y-8 text-center md:text-left mx-auto md:mx-0">
+                {/* Left Column: Typography Block */}
+                <div className="flex-1 w-full max-w-2xl space-y-8 text-center lg:text-left">
                     <p className="uppercase tracking-widest text-xs font-bold text-[#df00c1]">
                         Digital Consulting Agency
                     </p>
@@ -55,11 +26,21 @@ export default function HeroSection() {
                         We empower organizations through ethical AI governance, neuroinclusive design, and seamless strategic change management.
                     </p>
 
-                    <div className="pt-4 flex justify-center md:justify-start">
+                    <div className="pt-4 flex justify-center lg:justify-start">
                         <button className="bg-[#df00c1] text-white px-8 py-4 rounded-full font-bold transition-all duration-300 hover:shadow-[0_8px_25px_rgba(223,0,193,0.35)] hover:-translate-y-1 focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
                             Explore Services →
                         </button>
                     </div>
+                </div>
+
+                {/* Right Column: The pbg15 Graphic Asset */}
+                <div className="flex-1 w-full flex justify-center lg:justify-end relative">
+                    <img
+                        src="/pbg15-transparent.png"
+                        alt="Abstract digital wave visualization"
+                        // Object-contain and max-widths ensure it never swallows the screen or text
+                        className="w-full max-w-md lg:max-w-xl object-contain drop-shadow-2xl"
+                    />
                 </div>
 
             </div>
