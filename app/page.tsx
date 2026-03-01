@@ -11,16 +11,15 @@ import { ChatbotButton } from "@/components/chatbot-button"
 import { WorkspaceQuiz } from "@/components/workspace-quiz"
 import AuthSection from "@/components/auth/auth-section"
 import CapabilitiesBento from "@/components/capabilities-bento"
+import HeroSection from "@/components/hero-section"
 
 export default function HomePage() {
-  const heroRef = useRef(null)
   const toolsRef = useRef(null)
   const hfeRef = useRef(null)
   const statsRef = useRef(null)
   const quizRef = useRef(null)
   const ctaRef = useRef(null)
 
-  const heroInView = useInView(heroRef, { once: false, amount: 0.2 })
   const toolsInView = useInView(toolsRef, { once: true, amount: 0.2 })
   const hfeInView = useInView(hfeRef, { once: true, amount: 0.2 })
   const statsInView = useInView(statsRef, { once: true, amount: 0.2 })
@@ -90,71 +89,8 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen">
       <ChatbotButton />
 
-      {/* Hero Section */}
-      <section className="relative w-full py-16 md:py-28 lg:py-36 overflow-hidden bg-white">
-        <motion.div
-          ref={heroRef}
-          className="container px-4 md:px-6 relative z-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={heroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
-            <div className="space-y-5">
-              <span className="font-meta text-kache-orange">
-                Digital Consulting Agency
-              </span>
-              <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/tight text-deep-purple">
-                Architect systems for{" "}
-                <span className="text-kache-orange">
-                  Human & AI Collaboration
-                </span>
-              </h1>
-              <p className="max-w-[600px] text-body-grey md:text-xl font-body leading-relaxed">
-                We empower organizations through ethical AI governance, neuroinclusive design, and seamless strategic change management.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                <Button className="btn-orange font-semibold rounded-full px-8 py-3 text-base" asChild>
-                  <Link href="#capabilities">
-                    Get a Consultation
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button className="btn-purple-outline rounded-full px-8 py-3 text-base" asChild>
-                  <Link href="#capabilities">
-                    Learn More
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="mx-auto w-full max-w-[600px]">
-              <div className="relative rounded-2xl overflow-hidden shadow-editorial-hover">
-                <video
-                  src="https://synaz3xz7xc7xzre.public.blob.vercel-storage.com/FlowFactor/human_factors_hero-9t7jGvl3vZ1bS4XvfSnWs17oh3hle7.mp4"
-                  className="w-full h-auto object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  onError={(e) => {
-                    const fallbackImg = document.createElement("img")
-                    fallbackImg.src = "/human-centered-workspace.png"
-                    fallbackImg.alt = "Human-centered workspace"
-                    fallbackImg.className = "w-full h-auto object-cover"
-                    e.currentTarget.parentNode?.replaceChild(fallbackImg, e.currentTarget)
-                  }}
-                >
-                  <source
-                    src="https://synaz3xz7xc7xzre.public.blob.vercel-storage.com/FlowFactor/human_factors_hero-9t7jGvl3vZ1bS4XvfSnWs17oh3hle7.mp4"
-                    type="video/mp4"
-                  />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
+      {/* Hero Section — Parallax + Glassmorphic Circle */}
+      <HeroSection />
 
       {/* Capabilities Bento Grid */}
       <CapabilitiesBento />
