@@ -1,6 +1,3 @@
-// Assuming a standard shadcn/ui tailwind.config.ts setup
-// For brevity, content is omitted if it's standard.
-// Ensure it includes the necessary plugins and theme extensions.
 import type { Config } from "tailwindcss"
 
 const config = {
@@ -56,13 +53,26 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "brand-orange": "hsl(var(--brand-orange))",
-        "brand-dark-purple": "hsl(var(--brand-dark-purple))",
+        // ── Kache Digital Brand Tokens ──
+        midnight: "#290747",
+        "kache-fuchsia": "#FF24E9",
+        "kache-teal": "#0CC0DF",
+        "kache-orange": "#FF6A00",
+      },
+      fontFamily: {
+        heading: ["var(--font-montserrat)"],
+        body: ["var(--font-poppins)"],
+        meta: ["var(--font-montserrat)"],
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        "neon-fuchsia": "0 0 20px rgba(255, 36, 233, 0.5)",
+        "neon-fuchsia-lg": "0 0 40px rgba(255, 36, 233, 0.4)",
+        "neon-teal": "0 0 20px rgba(12, 192, 223, 0.4)",
       },
       keyframes: {
         "accordion-down": {

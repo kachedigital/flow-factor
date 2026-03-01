@@ -91,7 +91,18 @@ export default function HomePage() {
       <ChatbotButton />
 
       {/* Hero Section */}
-      <section className="relative w-full py-12 md:py-24 lg:py-32 overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <section className="relative w-full py-12 md:py-24 lg:py-32 overflow-hidden bg-midnight">
+        {/* Rainbow ribbon background with mask fade */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img
+            src="/accent-wave.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute top-0 left-0 w-full h-auto opacity-30 ribbon-mask"
+            style={{ mixBlendMode: 'screen' }}
+          />
+        </div>
+
         <motion.div
           ref={heroRef}
           className="container px-4 md:px-6 relative z-10"
@@ -101,29 +112,34 @@ export default function HomePage() {
         >
           <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="space-y-4">
-              <div className="inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary/10 text-secondary uppercase tracking-wide">
+              <div className="font-meta text-kache-teal">
                 Digital Consulting Agency
               </div>
-              <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/tight">
+              <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/tight text-white">
                 Architect systems for{" "}
-                <span className="bg-gradient-to-r from-brand-orange via-secondary to-brand-dark-purple bg-clip-text text-transparent">
+                <span className="text-kache-fuchsia">
                   Human & AI Collaboration
                 </span>
               </h1>
-              <p className="max-w-[600px] text-muted-foreground md:text-xl">
+              <p className="max-w-[600px] text-gray-400 md:text-xl font-body">
                 We empower organizations through ethical AI governance, neuroinclusive design, and seamless strategic change management.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="btn-premium font-semibold rounded-full px-8" asChild>
+                <Button className="btn-fuchsia font-semibold rounded-full px-8 py-3" asChild>
                   <Link href="#services">
                     Explore Services
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
+                <Button className="btn-teal rounded-full px-8 py-3" asChild>
+                  <Link href="/ai-consultant">
+                    Chat with our AI
+                  </Link>
+                </Button>
               </div>
             </div>
             <div className="mx-auto w-full max-w-[600px]">
-              <div className="relative rounded-xl overflow-hidden shadow-lg">
+              <div className="relative rounded-xl overflow-hidden shadow-2xl border border-white/10">
                 <video
                   src="https://synaz3xz7xc7xzre.public.blob.vercel-storage.com/FlowFactor/human_factors_hero-9t7jGvl3vZ1bS4XvfSnWs17oh3hle7.mp4"
                   className="w-full h-auto object-cover"
@@ -132,7 +148,6 @@ export default function HomePage() {
                   muted
                   playsInline
                   onError={(e) => {
-                    // If video fails, replace with fallback image
                     const fallbackImg = document.createElement("img")
                     fallbackImg.src = "/human-centered-workspace.png"
                     fallbackImg.alt = "Human-centered workspace"
@@ -146,7 +161,7 @@ export default function HomePage() {
                   />
                   Your browser does not support the video tag.
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-tr from-midnight/40 to-transparent"></div>
               </div>
             </div>
           </div>
@@ -223,8 +238,12 @@ export default function HomePage() {
       </section>
 
       {/* Stats Section */}
-      <section ref={statsRef} className="w-full py-12 md:py-24 bg-primary text-white">
-        <div className="container px-4 md:px-6">
+      <section ref={statsRef} className="w-full py-12 md:py-24 bg-midnight text-white relative overflow-hidden">
+        {/* Subtle teal glow behind stats */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img src="/accent-cyan.png" alt="" aria-hidden="true" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] opacity-10" style={{ mixBlendMode: 'screen' }} />
+        </div>
+        <div className="container px-4 md:px-6 relative z-10">
           <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
             initial={{ opacity: 0 }}
@@ -239,8 +258,8 @@ export default function HomePage() {
                 animate={statsInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <h3 className="text-4xl font-bold text-white">{stat.value}</h3>
-                <p className="text-primary-foreground/80">{stat.label}</p>
+                <h3 className="text-4xl font-bold text-kache-fuchsia">{stat.value}</h3>
+                <p className="text-gray-400">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -322,8 +341,12 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section ref={ctaRef} className="w-full py-12 md:py-24 bg-gradient-to-br from-primary to-primary/80 text-white">
-        <div className="container px-4 md:px-6">
+      <section ref={ctaRef} className="w-full py-12 md:py-24 bg-midnight text-white relative overflow-hidden">
+        {/* Fuchsia glow accent */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img src="/accent-pink.png" alt="" aria-hidden="true" className="absolute bottom-[-20%] right-[-10%] w-[500px] opacity-15" style={{ mixBlendMode: 'screen' }} />
+        </div>
+        <div className="container px-4 md:px-6 relative z-10">
           <motion.div
             className="flex flex-col items-center justify-center space-y-4 text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -331,18 +354,18 @@ export default function HomePage() {
             transition={{ duration: 0.7 }}
           >
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-white">
                 Ready to Transform Your Organization?
               </h2>
-              <p className="max-w-[900px] text-primary-foreground/90 md:text-xl/relaxed">
+              <p className="max-w-[900px] text-gray-400 md:text-xl/relaxed">
                 Partner with KacheDigital to architect systems that empower your team through ethical AI integration and neuroinclusive design.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="btn-accent px-8 rounded-full" asChild>
+              <Button className="btn-fuchsia px-8 rounded-full py-3" asChild>
                 <Link href="/ai-consultant">Chat with our AI</Link>
               </Button>
-              <Button className="bg-transparent border border-white text-white hover:bg-white/10 rounded-full" asChild>
+              <Button className="btn-teal rounded-full px-8 py-3" asChild>
                 <Link href="/#services">View Our Services</Link>
               </Button>
             </div>

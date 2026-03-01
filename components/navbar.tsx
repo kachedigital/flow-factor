@@ -128,11 +128,11 @@ export function Navbar() {
   ]
 
   return (
-    <header className={`sticky top-0 z-50 w-full bg-white shadow`}>
-      <div className="container mx-auto px-6">
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-midnight/95 backdrop-blur-lg shadow-lg shadow-black/20' : 'bg-midnight'}`}>
+      <div className="container mx-auto px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex-1">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center py-4">
               <img src="/logo.png" alt="KacheDigital Logo" className="h-10 w-auto" />
             </Link>
           </div>
@@ -141,7 +141,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${pathname === link.href ? "text-primary font-semibold" : ""
+                className={`text-sm font-medium font-body transition-colors hover:text-kache-fuchsia ${pathname === link.href ? "text-kache-fuchsia font-semibold" : "text-gray-300"
                   }`}
               >
                 {link.name}
