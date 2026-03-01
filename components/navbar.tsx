@@ -52,16 +52,21 @@ export function Navbar() {
     checkUser()
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-      if (event === "SIGNED_IN") {
-        setAuthDialogOpen(false)
-      }
-    })
+    let subscription: any = null
 
-    return () => subscription.unsubscribe()
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null)
+        if (event === "SIGNED_IN") {
+          setAuthDialogOpen(false)
+        }
+      })
+      subscription = data.subscription
+    }
+
+    return () => {
+      if (subscription) subscription.unsubscribe()
+    }
   }, [])
 
   const checkUser = async () => {
@@ -92,6 +97,10 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     try {
+      if (!supabase) {
+        setUser(null)
+        return
+      }
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error("Error signing out:", error)
@@ -111,11 +120,11 @@ export function Navbar() {
     setIsOpen(false)
   }
 
-  // Navigation links without dropdowns
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
-    { name: "Tools", href: "/tools" },
+    { name: "Services", href: "/#services" },
+    { name: "Blog", href: "/blog" },
   ]
 
   return (
@@ -124,9 +133,7 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex-1">
             <Link href="/" className="flex items-center">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                FlowFactor
-              </h1>
+              <img src="/logo.png" alt="KacheDigital Logo" className="h-10 w-auto" />
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
@@ -134,9 +141,8 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  pathname === link.href ? "text-primary font-semibold" : ""
-                }`}
+                className={`text-sm font-medium transition-colors hover:text-primary ${pathname === link.href ? "text-primary font-semibold" : ""
+                  }`}
               >
                 {link.name}
               </Link>
@@ -174,9 +180,9 @@ export function Navbar() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Welcome to FlowFactor</DialogTitle>
+                      <DialogTitle>Welcome to KacheDigital</DialogTitle>
                       <DialogDescription>
-                        Sign in to your account or create a new one to access all features.
+                        Sign in to your consultant portal or create a new account.
                       </DialogDescription>
                     </DialogHeader>
                     <Tabs defaultValue="signin" className="w-full">
@@ -211,9 +217,8 @@ export function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    pathname === link.href ? "text-primary font-semibold" : ""
-                  }`}
+                  className={`text-sm font-medium transition-colors hover:text-primary ${pathname === link.href ? "text-primary font-semibold" : ""
+                    }`}
                   onClick={closeMenu}
                 >
                   {link.name}
@@ -238,9 +243,9 @@ export function Navbar() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Welcome to FlowFactor</DialogTitle>
+                        <DialogTitle>Welcome to KacheDigital</DialogTitle>
                         <DialogDescription>
-                          Sign in to your account or create a new one to access all features.
+                          Sign in to your consultant portal or create a new account.
                         </DialogDescription>
                       </DialogHeader>
                       <Tabs defaultValue="signin" className="w-full">

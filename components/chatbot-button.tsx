@@ -15,7 +15,7 @@ export function ChatbotButton() {
   const [messages, setMessages] = useState([
     {
       role: "bot",
-      content: "Hi there! I'm the FlowFactor AI assistant. How can I help you with Human Factors Engineering today?",
+      content: "Hi there! I'm the KacheDigital AI assistant. How can I help you with digital consulting and AI transformation today?",
     },
   ])
   const [input, setInput] = useState("")
@@ -75,7 +75,7 @@ export function ChatbotButton() {
               <div className="bg-primary p-3 text-white flex items-center justify-between">
                 <div className="flex items-center">
                   <Bot className="h-5 w-5 mr-2" />
-                  <span className="font-medium">FlowFactor AI Assistant</span>
+                  <span className="font-medium font-heading">KacheDigital AI Assistant</span>
                 </div>
                 <Button
                   variant="ghost"
@@ -91,9 +91,8 @@ export function ChatbotButton() {
                 {messages.map((message, index) => (
                   <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                        message.role === "user" ? "bg-accent text-white" : "bg-muted"
-                      }`}
+                      className={`max-w-[80%] rounded-lg px-4 py-2 ${message.role === "user" ? "bg-accent text-white" : "bg-muted"
+                        }`}
                     >
                       {message.role === "bot" ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -120,7 +119,7 @@ export function ChatbotButton() {
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="text-xs text-muted-foreground mt-2 text-center">Powered by FlowFactor AI</div>
+                <div className="text-xs text-muted-foreground mt-2 text-center font-body">Powered by KacheDigital AI</div>
               </div>
             </Card>
           </motion.div>

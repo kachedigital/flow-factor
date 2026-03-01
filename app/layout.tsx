@@ -1,19 +1,30 @@
 import type React from "react"
 import "./globals.css"
-import { Inter } from "next/font/google"
+import { Montserrat, Open_Sans, Poppins } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import ClientWrapper from "@/components/client-wrapper"
 import { ErrorBoundary } from "@/components/error-boundary"
 
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-montserrat",
+})
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  variable: "--font-open-sans",
+})
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
 })
 
 export const metadata = {
-  title: "FlowFactor - Human Factors Engineering Consultant",
+  title: "KacheDigital - Digital Consulting Agency",
   description:
-    "FlowFactor provides expert Human Factors Engineering consulting services, specializing in AI + Human Collaboration, Neuroinclusive Design, Telework, and Industrial UX.",
+    "KacheDigital provides expert digital consulting services, specializing in AI Governance, AI + Human Collaboration, Neuroinclusive Design, and Strategic Change Management.",
   generator: 'v0.app'
 }
 
@@ -49,7 +60,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans`} suppressHydrationWarning>
+      <body className={`${montserrat.variable} ${openSans.variable} ${poppins.variable} font-sans`} suppressHydrationWarning>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <ClientWrapper>{children}</ClientWrapper>

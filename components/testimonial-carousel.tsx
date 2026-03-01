@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion"
 const testimonials = [
   {
     quote:
-      "FlowFactor's neuroinclusive design approach transformed our workspace. Employee satisfaction increased by 35% and productivity improved significantly.",
+      "KacheDigital's neuroinclusive design approach transformed our workspace. Employee satisfaction increased by 35% and productivity improved significantly.",
     author: "Sarah Johnson",
     title: "Head of Workplace Experience, TechCorp",
     avatar:
@@ -18,7 +18,7 @@ const testimonials = [
   },
   {
     quote:
-      "The AI + Human collaboration framework developed by FlowFactor helped us seamlessly integrate new technologies while keeping our team engaged and productive.",
+      "The AI + Human collaboration framework developed by KacheDigital helped us seamlessly integrate new technologies while keeping our team engaged and productive.",
     author: "Michael Chen",
     title: "CTO, InnovateTech",
     avatar:
@@ -26,7 +26,7 @@ const testimonials = [
   },
   {
     quote:
-      "Our manufacturing facility saw a 45% reduction in ergonomic injuries after implementing FlowFactor's industrial UX recommendations. The ROI was incredible.",
+      "Our manufacturing facility saw a 45% reduction in ergonomic injuries after implementing KacheDigital's industrial UX recommendations. The ROI was incredible.",
     author: "Robert Martinez",
     title: "Operations Director, ManufacturePro",
     avatar:
@@ -34,7 +34,7 @@ const testimonials = [
   },
   {
     quote:
-      "As we transitioned to hybrid work, FlowFactor's telework optimization strategies were invaluable. They helped us create a cohesive experience for both remote and in-office staff.",
+      "As we transitioned to hybrid work, KacheDigital's telework optimization strategies were invaluable. They helped us create a cohesive experience for both remote and in-office staff.",
     author: "Emily Wong",
     title: "HR Director, GlobalServices",
     avatar:
@@ -136,9 +136,8 @@ export function TestimonialCarousel() {
         {testimonials.map((_, index) => (
           <button
             key={index}
-            className={`w-2.5 h-2.5 rounded-full transition-colors ${
-              index === current ? "bg-primary" : "bg-primary/20"
-            }`}
+            className={`w-2.5 h-2.5 rounded-full transition-colors ${index === current ? "bg-primary" : "bg-primary/20"
+              }`}
             onClick={() => {
               setCurrent(index)
               setAutoplay(false)

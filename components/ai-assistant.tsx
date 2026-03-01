@@ -22,7 +22,7 @@ export function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi there! I'm your FlowFactor AI assistant. How can I help you optimize your workspace today?",
+      content: "Hi there! I'm your KacheDigital AI assistant. How can I help you with digital transformation today?",
     },
   ])
   const [input, setInput] = useState("")
@@ -115,10 +115,10 @@ export function AIAssistant() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/aligna-avatar.png" alt="FlowFactor AI" />
+                  <AvatarImage src="/aligna-avatar.png" alt="KacheDigital AI" />
                   <AvatarFallback>AI</AvatarFallback>
                 </Avatar>
-                <CardTitle className="text-sm">FlowFactor Assistant</CardTitle>
+                <CardTitle className="text-sm font-heading">KacheDigital Assistant</CardTitle>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
                 <X className="h-4 w-4" />
@@ -131,9 +131,8 @@ export function AIAssistant() {
                 {messages.map((message, index) => (
                   <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`rounded-lg px-3 py-2 max-w-[80%] ${
-                        message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                      }`}
+                      className={`rounded-lg px-3 py-2 max-w-[80%] ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                        }`}
                     >
                       {message.role === "assistant" ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">

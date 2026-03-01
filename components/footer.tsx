@@ -10,12 +10,10 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">
-              <span className="font-bold text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                FlowFactor
-              </span>
+              <img src="/logo.png" alt="KacheDigital Logo" className="h-10 w-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all" />
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Transforming workplaces through human-centered design and engineering solutions.
+            <p className="text-sm text-muted-foreground font-body">
+              Elevating businesses through ethical AI governance, robust accessibility, and human-first integration.
             </p>
             <div className="flex items-center space-x-4 pt-2">
               <Link href="#" aria-label="Facebook">
@@ -73,11 +71,19 @@ export function Footer() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Resources</h3>
+            <h3 className="text-lg font-semibold font-heading">Resources</h3>
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/blog/ai-collaboration"
+                  href="/services/ai-governance"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  AI & Risk Management
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services/ai-collaboration"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   AI + Human Collaboration
@@ -85,26 +91,23 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/blog/neuroinclusive-design"
+                  href="/services/neuroinclusive-ux"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Neuroinclusive Design
+                  Neuroinclusive UX
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/blog/telework-optimization"
+                  href="/services/change-management"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Telework Optimization
+                  Strategic Change Management
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/blog/industrial-ux"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  Industrial UX
+                <Link href="/blog" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Blog Insights
                 </Link>
               </li>
               <li>
@@ -129,7 +132,7 @@ export function Footer() {
             <div className="pt-2">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">hello@flowfactor.com</span>
+                <span className="text-sm text-muted-foreground">hello@kachedigital.com</span>
               </div>
               <div className="flex items-center space-x-2 mt-1">
                 <Phone className="h-4 w-4 text-muted-foreground" />
@@ -140,7 +143,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-xs text-muted-foreground">© 2023 FlowFactor. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© 2026 KacheDigital. All rights reserved.</p>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             <Link href="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors">
               Privacy Policy

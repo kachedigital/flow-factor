@@ -18,13 +18,18 @@ export default function AuthSection() {
     checkUser()
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-    })
+    let subscription: any = null
 
-    return () => subscription.unsubscribe()
+    if (supabase) {
+      const { data } = supabase.auth.onAuthStateChange((event, session) => {
+        setUser(session?.user ?? null)
+      })
+      subscription = data.subscription
+    }
+
+    return () => {
+      if (subscription) subscription.unsubscribe()
+    }
   }, [])
 
   const checkUser = async () => {
