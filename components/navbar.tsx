@@ -128,12 +128,12 @@ export function Navbar() {
   ]
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-lg shadow-editorial' : 'bg-white'}`}>
+    <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 transition-all duration-300">
       <div className="container mx-auto px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex-1">
-            <Link href="/" className="flex items-center py-4">
-              <img src="/logo.png" alt="KacheDigital Logo" className="h-10 w-auto" />
+            <Link href="/" className="flex items-center h-16 md:h-20">
+              <img src="/logo.png" alt="KacheDigital Logo" className="h-full w-auto py-3" />
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6">
@@ -141,7 +141,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium font-body transition-colors duration-200 hover:text-kache-orange focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-purple focus-visible:ring-offset-2 rounded-sm ${pathname === link.href ? "text-deep-purple font-semibold" : "text-deep-purple/80"
+                className={`text-[#525252] font-medium transition-colors duration-200 hover:text-[#df00c1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#df00c1] rounded-md px-2 py-1 ${pathname === link.href ? "text-[#df00c1] font-semibold" : ""
                   }`}
               >
                 {link.name}
