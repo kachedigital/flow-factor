@@ -22,11 +22,12 @@ export default function HeroSection() {
             {/* THE HERO ASSET: pbg15 (Transparent PNG) */}
             <motion.div
                 style={{ y: backgroundY }}
-                // Prominent on desktop (85% opacity), subtle watermark on mobile (20% opacity)
-                className="absolute right-[-15%] md:right-0 top-0 z-0 w-[130%] md:w-[60%] h-[120%] opacity-20 md:opacity-85 pointer-events-none"
+                // Container made much wider, taller, and pushed off the right edge
+                className="absolute right-[-10%] md:right-[-15%] top-[-20%] z-0 w-[150%] md:w-[80vw] h-[150%] opacity-20 md:opacity-85 pointer-events-none"
             >
                 <div
-                    className="w-full h-full bg-no-repeat bg-contain bg-right-top"
+                    // Swapped bg-contain for bg-cover, anchored right, added scale
+                    className="w-full h-full bg-no-repeat bg-cover bg-right-center transform md:scale-110 origin-right"
                     style={{ backgroundImage: "url('/pbg15-transparent.png')" }}
                 />
             </motion.div>
