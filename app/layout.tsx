@@ -54,7 +54,7 @@ export default function RootLayout({
       </head>
       <body className={`${montserrat.variable} ${poppins.variable} font-sans`} suppressHydrationWarning>
         <ErrorBoundary>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <ClientWrapper>{children}</ClientWrapper>
           </ThemeProvider>
         </ErrorBoundary>

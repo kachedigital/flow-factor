@@ -4,58 +4,54 @@
 
 @layer base {
   :root {
-    /* Light mode fallback — rarely used, dark is default */
     --background: 0 0% 100%;
-    --foreground: 260 84% 4.9%;
+    /* Pure White */
+    --foreground: 271 82% 15%;
+    /* Deep Purple #290747 */
     --card: 0 0% 100%;
-    --card-foreground: 260 84% 4.9%;
+    --card-foreground: 271 82% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 260 84% 4.9%;
-    --primary: 306 100% 57%;
-    /* Kache Fuchsia #FF24E9 */
+    --popover-foreground: 271 82% 15%;
+    --primary: 271 82% 15%;
+    /* Deep Purple — headings, nav */
     --primary-foreground: 0 0% 100%;
-    --secondary: 189 89% 46%;
-    /* Teal #0CC0DF */
+    --secondary: 24 100% 67%;
+    /* Orange #FF8D55 */
     --secondary-foreground: 0 0% 100%;
-    --accent: 189 89% 46%;
-    /* Teal */
+    --accent: 24 100% 67%;
+    /* Orange */
     --accent-foreground: 0 0% 100%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 306 100% 57%;
-    --radius: 0.5rem;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 271 82% 15%;
+    /* Deep Purple focus ring */
+    --radius: 0.75rem;
   }
 
   .dark {
     --background: 271 82% 15%;
-    /* Midnight #290747 */
     --foreground: 0 0% 100%;
-    --card: 271 82% 15%;
-    /* Midnight */
+    --card: 271 60% 12%;
     --card-foreground: 0 0% 100%;
     --popover: 271 82% 15%;
     --popover-foreground: 0 0% 100%;
-    --primary: 306 100% 57%;
-    /* Kache Fuchsia #FF24E9 */
+    --primary: 24 100% 67%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 189 89% 46%;
-    /* Teal #0CC0DF */
+    --secondary: 271 82% 15%;
     --secondary-foreground: 0 0% 100%;
-    --accent: 189 89% 46%;
-    /* Teal */
+    --accent: 24 100% 67%;
     --accent-foreground: 0 0% 100%;
     --muted: 271 60% 12%;
-    /* Darker midnight */
     --muted-foreground: 210 20% 65%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
     --border: 271 60% 20%;
     --input: 271 60% 20%;
-    --ring: 306 100% 57%;
+    --ring: 24 100% 67%;
   }
 }
 
@@ -75,6 +71,7 @@
   h5,
   h6 {
     @apply font-heading;
+    color: #290747;
   }
 
   p,
@@ -102,6 +99,7 @@
     text-transform: uppercase;
     letter-spacing: 0.15em;
     font-size: 10px;
+    font-weight: 600;
   }
 }
 
@@ -120,14 +118,14 @@
 
 /* ── Markdown / Prose ── */
 .prose pre {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.04);
   border-radius: 0.375rem;
   padding: 0.75rem;
   overflow-x: auto;
 }
 
 .prose code {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.04);
   border-radius: 0.25rem;
   padding: 0.125rem 0.25rem;
   font-size: 0.875em;
@@ -149,91 +147,71 @@
   padding-left: 1.5rem;
 }
 
-.dark .prose pre,
-.dark .prose code {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-.dark .prose blockquote {
-  border-left-color: rgba(255, 255, 255, 0.15);
-}
-
 /* ══════════════════════════════════════════
-   LIQUID AGENCY — Component System
+   EDITORIAL AGENCY — Component System
    ══════════════════════════════════════════ */
 
-/* ── Glass Card ── */
-.card-glass {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* ── Editorial Card ── */
+.card-editorial {
+  background: #FFFFFF;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
 }
 
-/* 1px top shine */
-.card-glass::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-  pointer-events: none;
-}
-
-.card-glass:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 36, 233, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+.card-editorial:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 
-/* ── Button: Kache Fuchsia (Primary CTA) ── */
-.btn-fuchsia {
-  background: #FF24E9;
+.card-editorial:focus-visible {
+  box-shadow: 0 0 0 3px #290747, 0 0 0 5px rgba(41, 7, 71, 0.2);
+}
+
+/* ── Button: Orange CTA ── */
+.btn-orange {
+  background: #FF8D55;
   color: white;
   font-weight: 600;
   border: none;
+  border-radius: 0.5rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn-fuchsia:hover {
-  box-shadow: 0 0 20px rgba(255, 36, 233, 0.5);
+.btn-orange:hover {
+  background: #F07A3F;
+  box-shadow: 0 4px 16px rgba(255, 141, 85, 0.3);
   transform: translateY(-1px);
 }
 
-.btn-fuchsia:active {
-  box-shadow: 0 0 10px rgba(255, 36, 233, 0.3);
+.btn-orange:active {
   transform: translateY(1px);
+  box-shadow: none;
 }
 
-/* ── Button: Teal (Secondary) ── */
-.btn-teal {
+.btn-orange:focus-visible {
+  box-shadow: 0 0 0 3px #290747, 0 0 0 5px rgba(41, 7, 71, 0.2);
+}
+
+/* ── Button: Purple Outline ── */
+.btn-purple-outline {
   background: transparent;
-  color: #0CC0DF;
+  color: #290747;
   font-weight: 600;
-  border: 1px solid rgba(12, 192, 223, 0.4);
+  border: 2px solid #290747;
+  border-radius: 0.5rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn-teal:hover {
-  background: rgba(12, 192, 223, 0.08);
-  border-color: #0CC0DF;
-  box-shadow: 0 0 20px rgba(12, 192, 223, 0.2);
-  transform: translateY(-1px);
+.btn-purple-outline:hover {
+  background: #290747;
+  color: white;
 }
 
-/* ── Hero Ribbon Mask ── */
+/* ── Ribbon Mask ── */
 .ribbon-mask {
   mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-}
-
-/* ── Gradient Background (legacy compat) ── */
-.gradient-bg {
-  background: linear-gradient(135deg, #290747 0%, #1a0535 100%);
 }

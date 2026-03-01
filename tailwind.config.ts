@@ -53,11 +53,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // ── Kache Digital Brand Tokens ──
-        midnight: "#290747",
-        "kache-fuchsia": "#FF24E9",
-        "kache-teal": "#0CC0DF",
-        "kache-orange": "#FF6A00",
+        // ── Kache Digital Editorial Tokens ──
+        "deep-purple": "#290747",
+        "kache-orange": "#FF8D55",
+        "body-grey": "#4B5563",
       },
       fontFamily: {
         heading: ["var(--font-montserrat)"],
@@ -70,9 +69,9 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        "neon-fuchsia": "0 0 20px rgba(255, 36, 233, 0.5)",
-        "neon-fuchsia-lg": "0 0 40px rgba(255, 36, 233, 0.4)",
-        "neon-teal": "0 0 20px rgba(12, 192, 223, 0.4)",
+        "editorial": "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+        "editorial-hover": "0 4px 16px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.06)",
+        "orange-glow": "0 4px 16px rgba(255, 141, 85, 0.25)",
       },
       keyframes: {
         "accordion-down": {

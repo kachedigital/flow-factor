@@ -128,7 +128,7 @@ export function Navbar() {
   ]
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-midnight/95 backdrop-blur-lg shadow-lg shadow-black/20' : 'bg-midnight'}`}>
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-lg shadow-editorial' : 'bg-white'}`}>
       <div className="container mx-auto px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex-1">
@@ -141,7 +141,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium font-body transition-colors hover:text-kache-fuchsia ${pathname === link.href ? "text-kache-fuchsia font-semibold" : "text-gray-300"
+                className={`text-sm font-medium font-body transition-colors duration-200 hover:text-kache-orange focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-purple focus-visible:ring-offset-2 rounded-sm ${pathname === link.href ? "text-deep-purple font-semibold" : "text-deep-purple/80"
                   }`}
               >
                 {link.name}
