@@ -41,12 +41,12 @@ export default function RefinedHero() {
 
                     {/* THE BREAKDOWN (Micro-Flex implementation) */}
                     <div className="flex flex-col space-y-3 font-extrabold tracking-tighter leading-tight">
-                        <h1 className="text-4xl md:text-6xl text-[#525252]">
+                        <h1 className="text-4xl md:text-6xl text-[#161616]">
                             The web is changing. We make sure your business stays ahead of it.
                         </h1>
                     </div>
 
-                    <p className="text-lg text-[#525252] max-w-xl font-medium leading-relaxed">
+                    <p className="text-lg text-[#161616] max-w-xl font-medium leading-relaxed">
                         From mandatory accessibility laws to the AI shift, we handle the technical side so you can just run your company.
                     </p>
 

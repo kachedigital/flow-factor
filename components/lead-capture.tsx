@@ -53,7 +53,7 @@ export default function LeadCaptureSection() {
                     <h2 className="text-4xl md:text-5xl font-extrabold text-[#290747] tracking-tight leading-tight">
                         Ready to Future-Proof Your Organization?
                     </h2>
-                    <p className="text-lg text-[#525252] font-medium max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                    <p className="text-lg text-[#161616] font-medium max-w-lg mx-auto lg:mx-0 leading-relaxed">
                         Partner with Kache Digital to navigate AI integration, achieve global digital compliance, and scale your systems securely.
                     </p>
                     <div className="hidden lg:block pt-8">
@@ -80,7 +80,7 @@ export default function LeadCaptureSection() {
                                 required
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full bg-[#FAFAFA] border border-gray-200 rounded-xl px-4 py-3 text-[#525252] transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#df00c1] focus:border-transparent"
+                                className="w-full bg-[#FAFAFA] border border-gray-200 rounded-xl px-4 py-3 text-[#161616] transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#df00c1] focus:border-transparent"
                                 placeholder="Jane Doe"
                             />
                         </div>
@@ -98,7 +98,7 @@ export default function LeadCaptureSection() {
                                 value={formData.email}
                                 onChange={handleChange}
                                 // Toggle red border if error exists
-                                className={`w-full bg-[#FAFAFA] border ${error ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-[#525252] transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${error ? 'focus:ring-red-500' : 'focus:ring-[#df00c1]'} focus:border-transparent`}
+                                className={`w-full bg-[#FAFAFA] border ${error ? 'border-red-500' : 'border-gray-200'} rounded-xl px-4 py-3 text-[#161616] transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 ${error ? 'focus:ring-red-500' : 'focus:ring-[#df00c1]'} focus:border-transparent`}
                                 placeholder="jane@yourcompany.com"
                                 aria-invalid={error ? "true" : "false"}
                             />
@@ -124,7 +124,7 @@ export default function LeadCaptureSection() {
                                 required
                                 value={formData.company}
                                 onChange={handleChange}
-                                className="w-full bg-[#FAFAFA] border border-gray-200 rounded-xl px-4 py-3 text-[#525252] transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#df00c1] focus:border-transparent"
+                                className="w-full bg-[#FAFAFA] border border-gray-200 rounded-xl px-4 py-3 text-[#161616] transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#df00c1] focus:border-transparent"
                                 placeholder="Company Name"
                             />
                         </div>
@@ -138,7 +138,7 @@ export default function LeadCaptureSection() {
                             {isSubmitting ? 'Processing...' : 'Request Consultation'}
                         </button>
 
-                        <p className="text-center text-xs text-[#525252]/60 mt-2">
+                        <p className="text-center text-xs text-[#161616]/60 mt-2">
                             By submitting this form, you agree to our privacy policy.
                         </p>
                     </form>

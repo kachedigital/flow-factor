@@ -51,7 +51,7 @@ export default function CapabilitiesBento() {
                             <h3 className="text-xl font-bold text-[#290747] mb-3">
                                 {item.title}
                             </h3>
-                            <p className="text-[#525252] leading-relaxed mb-4">
+                            <p className="text-[#161616] leading-relaxed mb-4">
                                 {item.description}
                             </p>
                             {/* @ts-ignore - Some cards have links, some don't */}

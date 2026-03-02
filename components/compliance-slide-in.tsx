@@ -60,7 +60,7 @@ export default function ComplianceSlideIn() {
                             <h3 id="modal-title" className="text-[#290747] font-bold text-lg leading-tight mb-2">
                                 Did you know? New web compliance rules are active for 2026.
                             </h3>
-                            <p id="modal-desc" className="text-[#525252] text-sm leading-relaxed mb-4">
+                            <p id="modal-desc" className="text-[#161616] text-sm leading-relaxed mb-4">
                                 The DOJ has updated the standards for how small businesses show up online. We’re helping our partners navigate these changes to ensure their digital storefronts stay accessible and compliant.
                             </p>
                             <a
