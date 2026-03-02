@@ -3,34 +3,24 @@
 export default function CapabilitiesBento() {
     const capabilities = [
         {
-            title: "Growth Strategy",
-            description: "Data-driven roadmaps designed to scale your digital presence and align with long-term business objectives.",
-            icon: "📈"
+            title: "AI Governance & Policy Development",
+            description: "We provide the counsel needed to develop robust policies and procedures.",
+            icon: "⚖️"
         },
         {
-            title: "Full-Stack Engineering",
-            description: "Robust, scalable, and secure architecture built with modern frameworks to power enterprise-grade applications.",
-            icon: "⚙️"
+            title: "Digital Compliance & The 2027 Deadline",
+            description: "The grace period for updated global accessibility standards ends in 2027. We turn this requirement into your competitive advantage.",
+            icon: "⏱️"
         },
         {
-            title: "Product Design (UI/UX)",
-            description: "Neuroinclusive, WCAG AA compliant design systems that prioritize seamless customer experiences and high conversion.",
-            icon: "✨"
-        },
-        {
-            title: "AI Integration",
-            description: "Ethical AI governance and implementation to automate workflows and enhance human collaboration.",
-            icon: "🤖"
-        },
-        {
-            title: "Change Management",
-            description: "Strategic consulting to ensure your team adapts to new digital systems smoothly and efficiently.",
+            title: "Workflow & Human-in-the-Loop Automation",
+            description: "We identify repetitive tasks that slow you down and replace them with intelligent workflows.",
             icon: "🔄"
         },
         {
-            title: "Performance Optimization",
-            description: "Deep-dive audits and refactoring to ensure lightning-fast load times and flawless mobile responsiveness.",
-            icon: "⚡"
+            title: "Change Management Strategy",
+            description: "Successful innovation requires a human touch. We consult on the \"people side\" of technology.",
+            icon: "👥"
         }
     ];
 
@@ -42,15 +32,12 @@ export default function CapabilitiesBento() {
                 {/* Section Header */}
                 <div className="text-center md:text-left mb-16 relative z-10">
                     <h2 className="text-4xl md:text-5xl font-extrabold text-[#290747] tracking-tight mb-4">
-                        Core Capabilities
+                        Expert Counsel. Targeted Solutions.
                     </h2>
-                    <p className="text-lg text-[#525252] max-w-2xl font-medium">
-                        We bridge the gap between complex engineering and human-centric design to deliver measurable results.
-                    </p>
                 </div>
 
                 {/* The Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                     {capabilities.map((item, index) => (
                         <div
                             key={index}

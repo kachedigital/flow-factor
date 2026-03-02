@@ -63,12 +63,12 @@ export default function RefinedHero() {
                     </div>
 
                     <p className="text-lg text-[#525252] max-w-xl font-medium leading-relaxed">
-                        We empower organizations through ethical AI governance, neuroinclusive design, and seamless strategic change management.
+                        We bridge the gap between complex digital transformation and ethical, accessible execution. Kache Digital guides organizations through AI integration and global compliance with radical clarity.
                     </p>
 
                     <div className="pt-4 flex justify-center md:justify-start">
                         <button className="bg-[#df00c1] text-white px-8 py-4 rounded-full font-bold transition-all duration-300 hover:shadow-[0_8px_25px_rgba(223,0,193,0.35)] hover:-translate-y-1 focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
-                            Explore Services →
+                            Schedule a Strategy Session
                         </button>
                     </div>
                 </div>

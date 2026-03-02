@@ -12,6 +12,7 @@ import { WorkspaceQuiz } from "@/components/workspace-quiz"
 import AuthSection from "@/components/auth/auth-section"
 import CapabilitiesBento from "@/components/capabilities-bento"
 import HeroSection from "@/components/hero-section"
+import LeadCaptureSection from "@/components/lead-capture"
 
 export default function HomePage() {
   const toolsRef = useRef(null)
@@ -94,6 +95,9 @@ export default function HomePage() {
 
       {/* Capabilities Bento Grid */}
       <CapabilitiesBento />
+
+      {/* Lead Capture Form */}
+      <LeadCaptureSection />
 
       {/* Our Approach Section */}
       <section ref={hfeRef} className="w-full py-12 md:py-24 bg-muted/20">
