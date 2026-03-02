@@ -9,7 +9,6 @@ import { CheckCircle, ArrowRight, Accessibility, Activity, Bot } from "lucide-re
 import { motion, useInView } from "framer-motion"
 import { ChatbotButton } from "@/components/chatbot-button"
 import { WorkspaceQuiz } from "@/components/workspace-quiz"
-import AuthSection from "@/components/auth/auth-section"
 import CapabilitiesBento from "@/components/capabilities-bento"
 import HeroSection from "@/components/hero-section"
 import LeadCaptureSection from "@/components/lead-capture"
@@ -229,36 +228,6 @@ export default function HomePage() {
               <div className="bg-background rounded-xl shadow-lg p-6">
                 <WorkspaceQuiz />
               </div>
-            </div>
-
-            {/* Authentication Section */}
-            <div className="space-y-4">
-              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary">
-                Secure Access
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Your Account</h2>
-              <p className="text-muted-foreground md:text-xl/relaxed">
-                Sign in to access file upload features, save your progress, and get personalized recommendations.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                  <span>Secure file uploads</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                  <span>Personal data protection</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                  <span>Progress tracking</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                  <span>Customized experience</span>
-                </li>
-              </ul>
-              <AuthSection />
             </div>
           </motion.div>
         </div>

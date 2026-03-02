@@ -19,7 +19,7 @@ export default function RefinedHero() {
                     ease: "easeInOut"
                 }}
                 // Positioned absolutely to flow from the Navbar down.
-                className="absolute right-[35%] md:right-[30%] top-[-10%] z-0 w-[150%] md:w-[85vw] pointer-events-none drop-shadow-3xl"
+                className="absolute right-[10%] md:right-[5%] top-[-10%] z-0 w-[150%] md:w-[85vw] pointer-events-none drop-shadow-3xl"
             >
                 <img
                     src="/3d-ribbon-transparent.png" // Asset Image 36
@@ -40,9 +40,11 @@ export default function RefinedHero() {
                     </p>
 
                     {/* THE BREAKDOWN (Micro-Flex implementation) */}
-                    <div className="flex flex-col space-y-3 font-extrabold tracking-tighter leading-tight">
+                    <div className="flex flex-col space-y-2 font-extrabold tracking-tighter leading-tight">
                         <h1 className="text-4xl md:text-6xl text-[#290747]">
-                            The web is changing. We make sure your business stays ahead of it.
+                            The web is changing.
+                            <p className="text-4xl md:text-6xl text-[#290747]">
+                                We make sure your business stays ahead of it.</p>
                         </h1>
                     </div>
 
