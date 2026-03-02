@@ -1,46 +1,76 @@
 'use client';
 
-export default function HeroSection() {
+import { motion } from 'framer-motion';
+
+export default function RefinedHero() {
     return (
-        <section className="relative w-full min-h-[85vh] flex items-center bg-[#FAFAFA] overflow-hidden">
+        <section className="relative w-full min-h-[90vh] flex items-center bg-[#FAFAFA] overflow-hidden">
 
-            {/* Main Content Container - Flex row on desktop, column on mobile */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center justify-between gap-12">
+            {/* THE 3D ASSET: Anchor & Scale Fix
+        SENIOR: This MUST be the transparent PNG, not the raw JPG!
+      */}
+            <motion.div
+                animate={{
+                    y: ["-3%", "3%", "-3%"], // Slow breathing float
+                }}
+                transition={{
+                    duration: 15, // Slow, buttery smooth
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                }}
+                // Positioned absolutely on the right to anchor, not overwhelm.
+                className="absolute right-[-15%] md:right-[-10%] top-[10%] z-0 w-[140%] md:w-[75vw] pointer-events-none drop-shadow-3xl"
+            >
+                <img
+                    src="/3d-ribbon-transparent.png" // Asset Image 36
+                    alt="Abstract 3D digital agency asset"
+                    // Set to high opacity on desktop, subtle watermark on mobile
+                    className="w-full h-auto object-contain opacity-20 md:opacity-80"
+                />
+            </motion.div>
 
-                {/* Left Column: Typography Block */}
-                <div className="flex-1 w-full max-w-2xl space-y-8 text-center lg:text-left">
+            {/* FOREGROUND CONTENT: The Editorial Container */}
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 flex flex-col justify-center">
+
+                {/* Typographic Blocks in a Frosted Shield for WCAG compliance */}
+                <div className="max-w-3xl space-y-8 text-center md:text-left mx-auto md:mx-0 bg-[#FAFAFA]/40 md:bg-transparent backdrop-blur-3xl md:backdrop-blur-none p-6 md:p-0 rounded-3xl">
+
                     <p className="uppercase tracking-widest text-xs font-bold text-[#df00c1]">
                         Digital Consulting Agency
                     </p>
 
-                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-[1.15]">
-                        <span className="text-[#525252]">Architect systems for</span> <br />
-                        <span className="bg-gradient-to-r from-[#FF8D55] via-[#df00c1] to-[#7e22ce] bg-clip-text text-transparent inline-block pb-1">
-                            Human & AI
-                        </span>
-                        <br />
-                        <span className="text-[#290747]">Collaboration</span>
-                    </h1>
+                    {/* THE BREAKDOWN (Micro-Flex implementation) */}
+                    <div className="flex flex-col space-y-3 font-extrabold tracking-tighter leading-tight">
+                        {/* Block 1 */}
+                        <h1 className="text-4xl md:text-6xl text-[#525252]">Architect Systems For</h1>
 
-                    <p className="text-lg text-[#525252] font-medium leading-relaxed">
+                        {/* Block 2 (The Nested Flex Row) */}
+                        <div className="flex items-center gap-4 text-5xl md:text-8xl justify-center md:justify-start">
+                            {/* HUMAN (The new vibrant gradient) */}
+                            <span className="bg-gradient-to-r from-[#FF8D55] via-[#df00c1] to-[#7e22ce] bg-clip-text text-transparent">
+                                HUMAN
+                            </span>
+                            {/* & (Solid Purple) */}
+                            <span className="text-[#290747] font-medium">&</span>
+                            {/* AI (The same gradient) */}
+                            <span className="bg-gradient-to-r from-[#FF8D55] via-[#df00c1] to-[#7e22ce] bg-clip-text text-transparent">
+                                AI
+                            </span>
+                        </div>
+
+                        {/* Block 3 */}
+                        <h2 className="text-4xl md:text-7xl text-[#290747]">Collaboration</h2>
+                    </div>
+
+                    <p className="text-lg text-[#525252] max-w-xl font-medium leading-relaxed">
                         We empower organizations through ethical AI governance, neuroinclusive design, and seamless strategic change management.
                     </p>
 
-                    <div className="pt-4 flex justify-center lg:justify-start">
+                    <div className="pt-4 flex justify-center md:justify-start">
                         <button className="bg-[#df00c1] text-white px-8 py-4 rounded-full font-bold transition-all duration-300 hover:shadow-[0_8px_25px_rgba(223,0,193,0.35)] hover:-translate-y-1 focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
                             Explore Services →
                         </button>
                     </div>
-                </div>
-
-                {/* Right Column: The pbg15 Graphic Asset */}
-                <div className="flex-1 w-full flex justify-center lg:justify-end relative">
-                    <img
-                        src="/pbg15-transparent.png"
-                        alt="Abstract digital wave visualization"
-                        // Object-contain and max-widths ensure it never swallows the screen or text
-                        className="w-full max-w-md lg:max-w-xl object-contain drop-shadow-2xl"
-                    />
                 </div>
 
             </div>
