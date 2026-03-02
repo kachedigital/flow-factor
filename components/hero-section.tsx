@@ -41,35 +41,19 @@ export default function RefinedHero() {
 
                     {/* THE BREAKDOWN (Micro-Flex implementation) */}
                     <div className="flex flex-col space-y-3 font-extrabold tracking-tighter leading-tight">
-                        {/* Block 1 */}
-                        <h1 className="text-4xl md:text-6xl text-[#525252]">Architect Systems For</h1>
-
-                        {/* Block 2 (The Nested Flex Row) */}
-                        <div className="flex items-center gap-4 text-5xl md:text-8xl justify-center md:justify-start">
-                            {/* HUMAN (The new vibrant gradient) */}
-                            <span className="bg-gradient-to-r from-[#FF8D55] via-[#df00c1] to-[#7e22ce] bg-clip-text text-transparent">
-                                HUMAN
-                            </span>
-                            {/* & (Solid Purple) */}
-                            <span className="text-[#290747] font-medium">&</span>
-                            {/* AI (The same gradient) */}
-                            <span className="bg-gradient-to-r from-[#FF8D55] via-[#df00c1] to-[#7e22ce] bg-clip-text text-transparent">
-                                AI
-                            </span>
-                        </div>
-
-                        {/* Block 3 */}
-                        <h2 className="text-4xl md:text-7xl text-[#290747]">Collaboration</h2>
+                        <h1 className="text-4xl md:text-6xl text-[#525252]">
+                            The web is changing. We make sure your business stays ahead of it.
+                        </h1>
                     </div>
 
                     <p className="text-lg text-[#525252] max-w-xl font-medium leading-relaxed">
-                        We bridge the gap between complex digital transformation and ethical, accessible execution. Kache Digital guides organizations through AI integration and global compliance with radical clarity.
+                        From mandatory accessibility laws to the AI shift, we handle the technical side so you can just run your company.
                     </p>
 
                     <div className="pt-4 flex justify-center md:justify-start">
-                        <button className="bg-[#df00c1] text-white px-8 py-4 rounded-full font-bold transition-all duration-300 hover:shadow-[0_8px_25px_rgba(223,0,193,0.35)] hover:-translate-y-1 focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
-                            Schedule a Strategy Session
-                        </button>
+                        <a href="#services" className="inline-block bg-[#df00c1] text-white px-8 py-4 rounded-full font-bold transition-all duration-300 hover:shadow-[0_8px_25px_rgba(223,0,193,0.35)] hover:-translate-y-1 focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
+                            See How We Can Help ↓
+                        </a>
                     </div>
                 </div>
 

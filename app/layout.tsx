@@ -5,6 +5,7 @@ import { Montserrat, Poppins } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import ClientWrapper from "@/components/client-wrapper"
 import { ErrorBoundary } from "@/components/error-boundary"
+import ComplianceSlideIn from "@/components/compliance-slide-in"
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -89,6 +90,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <ClientWrapper>{children}</ClientWrapper>
+            <ComplianceSlideIn />
           </ThemeProvider>
         </ErrorBoundary>
       </body>

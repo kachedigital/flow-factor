@@ -3,23 +3,20 @@
 export default function CapabilitiesBento() {
     const capabilities = [
         {
-            title: "AI Governance & Policy Development",
-            description: "We provide the counsel needed to develop robust policies and procedures.",
+            title: "Keep You Legal",
+            description: "We heavily focus on the impending 2026 WCAG deadlines, updating and auditing your digital storefronts to ensure total global compliance.",
+            link: "→ Run a Free Risk Scan",
+            href: "#",
             icon: "⚖️"
         },
         {
-            title: "Digital Compliance & The 2027 Deadline",
-            description: "The grace period for updated global accessibility standards ends in 2027. We turn this requirement into your competitive advantage.",
-            icon: "⏱️"
+            title: "Make AI Simple",
+            description: "We identify repetitive tasks that slow you down and replace them with intelligent, human-in-the-loop workflows and internal automations.",
+            icon: "🤖"
         },
         {
-            title: "Workflow & Human-in-the-Loop Automation",
-            description: "We identify repetitive tasks that slow you down and replace them with intelligent workflows.",
-            icon: "🔄"
-        },
-        {
-            title: "Change Management Strategy",
-            description: "Successful innovation requires a human touch. We consult on the \"people side\" of technology.",
+            title: "Guide the Transition",
+            description: "Successful innovation requires strategic governance. We consult on the 'people side' of technology, providing complete team training.",
             icon: "👥"
         }
     ];
@@ -37,7 +34,7 @@ export default function CapabilitiesBento() {
                 </div>
 
                 {/* The Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                <div id="services" className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
                     {capabilities.map((item, index) => (
                         <div
                             key={index}
@@ -54,9 +51,15 @@ export default function CapabilitiesBento() {
                             <h3 className="text-xl font-bold text-[#290747] mb-3">
                                 {item.title}
                             </h3>
-                            <p className="text-[#525252] leading-relaxed">
+                            <p className="text-[#525252] leading-relaxed mb-4">
                                 {item.description}
                             </p>
+                            {/* @ts-ignore - Some cards have links, some don't */}
+                            {item.link && (
+                                <a href={item.href} className="text-[#df00c1] font-bold text-sm tracking-wide hover:underline focus:outline-none focus:underline">
+                                    {item.link}
+                                </a>
+                            )}
                         </div>
                     ))}
                 </div>

@@ -52,14 +52,8 @@ export function Navbar() {
 
         {/* CTAs & UTILITIES */}
         <div className="hidden md:flex items-center gap-6">
-          <a
-            href="/signin"
-            className="text-[#525252] font-semibold text-sm hover:text-[#df00c1] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md px-2 py-1"
-          >
-            Sign In
-          </a>
           <button className="bg-[#290747] text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 hover:bg-[#df00c1] hover:shadow-[0_4px_15px_rgba(223,0,193,0.3)] focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
-            Let's Talk
+            Get a Digital Audit
           </button>
         </div>
 
