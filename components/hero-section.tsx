@@ -25,7 +25,7 @@ export default function RefinedHero() {
                     src="/3d-ribbon-transparent.png" // Asset Image 36
                     alt="Abstract 3D digital agency asset"
                     // Set to high opacity on desktop, subtle watermark on mobile
-                    className="w-full h-auto object-contain opacity-20 md:opacity-80"
+                    className="w-full h-auto object-contain opacity-20 md:opacity-100"
                 />
             </motion.div>
 
