@@ -32,7 +32,7 @@ export default function ClientWrapper({
     <MotionConfig reducedMotion="user">
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-grow">
+        <main className="flex-grow pt-24">
           <Suspense fallback={<LoadingSkeleton />}>
             <PageTransition>{children}</PageTransition>
           </Suspense>

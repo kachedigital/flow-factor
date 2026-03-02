@@ -1,278 +1,81 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Menu, X, User, LogOut, LogIn } from "lucide-react"
-import { supabase } from "@/lib/supabase"
-import LoginForm from "@/components/auth/login-form"
-import SignupForm from "@/components/auth/signup-form"
-import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { useState, useEffect } from 'react';
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [authDialogOpen, setAuthDialogOpen] = useState(false)
-  const pathname = usePathname()
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  // UX Logic: Make the shadow slightly heavier when the user actually starts scrolling
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true)
-      } else {
-        setIsScrolled(false)
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
-
-  useEffect(() => {
-    // Check initial auth state
-    checkUser()
-
-    // Listen for auth changes
-    let subscription: any = null
-
-    if (supabase) {
-      const { data } = supabase.auth.onAuthStateChange((event, session) => {
-        setUser(session?.user ?? null)
-        if (event === "SIGNED_IN") {
-          setAuthDialogOpen(false)
-        }
-      })
-      subscription = data.subscription
-    }
-
-    return () => {
-      if (subscription) subscription.unsubscribe()
-    }
-  }, [])
-
-  const checkUser = async () => {
-    try {
-      if (!supabase) {
-        console.error("Supabase client not available")
-        setUser(null)
-        return
-      }
-
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
-
-      if (error && error.message !== "Auth session missing!") {
-        console.error("Error getting user:", error)
-      }
-
-      setUser(user || null)
-    } catch (error) {
-      if (error instanceof Error && !error.message.includes("Auth session missing")) {
-        console.error("Error checking user:", error)
-      }
-      setUser(null)
-    }
-  }
-
-  const handleSignOut = async () => {
-    try {
-      if (!supabase) {
-        setUser(null)
-        return
-      }
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error("Error signing out:", error)
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
-      console.error("Error signing out:", error)
-    }
-  }
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen)
-  }
-
-  const closeMenu = () => {
-    setIsOpen(false)
-  }
-
-  const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Services", href: "/#services" },
-    { name: "Blog", href: "/blog" },
-  ]
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 transition-all duration-300">
-      <div className="container mx-auto px-8">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <Link href="/" className="flex items-center h-16 md:h-20">
-              <img src="/logo.png" alt="KacheDigital Logo" className="h-full w-auto py-3" />
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`text-[#525252] font-medium transition-colors duration-200 hover:text-[#df00c1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#df00c1] rounded-md px-2 py-1 ${pathname === link.href ? "text-[#df00c1] font-semibold" : ""
-                  }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-2">
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span className="max-w-[100px] truncate">{user?.email || "User"}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem disabled>
-                      <User className="mr-2 h-4 w-4" />
-                      {user?.email || "User"}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Sign In
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Welcome to KacheDigital</DialogTitle>
-                      <DialogDescription>
-                        Sign in to your consultant portal or create a new account.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <Tabs defaultValue="signin" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="signin">Sign In</TabsTrigger>
-                        <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="signin" className="mt-4">
-                        <LoginForm onSuccess={checkUser} />
-                      </TabsContent>
-                      <TabsContent value="signup" className="mt-4">
-                        <SignupForm onSuccess={checkUser} />
-                      </TabsContent>
-                    </Tabs>
-                  </DialogContent>
-                </Dialog>
-              )}
-              <ModeToggle />
-            </div>
-            <button className="md:hidden" onClick={toggleMenu} aria-label="Toggle menu">
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-        </div>
-      </div>
+    <header
+      className={`fixed top-0 w-full z-[100] transition-all duration-300 ${isScrolled
+        ? 'bg-white/85 backdrop-blur-xl border-b border-gray-200/50 shadow-md py-3'
+        : 'bg-white/60 backdrop-blur-lg border-b border-transparent py-5'
+        }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
 
-      {isOpen && (
-        <div className="md:hidden bg-background border-b">
-          <div className="container mx-auto px-4 py-4">
-            <nav className="flex flex-col space-y-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${pathname === link.href ? "text-primary font-semibold" : ""
-                    }`}
-                  onClick={closeMenu}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              <div className="flex flex-col space-y-2 pt-2">
-                {user ? (
-                  <>
-                    <div className="text-sm text-muted-foreground">Signed in as {user.email}</div>
-                    <Button variant="ghost" size="sm" onClick={handleSignOut} className="justify-start">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="justify-start">
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Sign In
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Welcome to KacheDigital</DialogTitle>
-                        <DialogDescription>
-                          Sign in to your consultant portal or create a new account.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <Tabs defaultValue="signin" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="signin">Sign In</TabsTrigger>
-                          <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="signin" className="mt-4">
-                          <LoginForm onSuccess={checkUser} />
-                        </TabsContent>
-                        <TabsContent value="signup" className="mt-4">
-                          <SignupForm onSuccess={checkUser} />
-                        </TabsContent>
-                      </Tabs>
-                    </DialogContent>
-                  </Dialog>
-                )}
-                <div className="flex items-center space-x-2">
-                  <ModeToggle />
-                </div>
-              </div>
-            </nav>
-          </div>
+        {/* LOGO CONTAINER */}
+        {/* Senior: Ensure this uses the horizontal Kache Digital logo with the transparent background */}
+        <a
+          href="/"
+          className="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-lg p-1"
+          aria-label="Kache Digital Home"
+        >
+          <img
+            src="/logo.png"
+            alt="Kache Digital Logo"
+            className="h-10 w-auto object-contain"
+          />
+        </a>
+
+        {/* DESKTOP NAVIGATION */}
+        <nav className="hidden md:flex items-center gap-8">
+          {['Home', 'About', 'Services', 'Blog'].map((item) => (
+            <a
+              key={item}
+              href={`/${item.toLowerCase()}`}
+              className="text-[#525252] font-semibold text-sm uppercase tracking-wider hover:text-[#df00c1] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md px-2 py-1"
+            >
+              {item}
+            </a>
+          ))}
+        </nav>
+
+        {/* CTAs & UTILITIES */}
+        <div className="hidden md:flex items-center gap-6">
+          <a
+            href="/signin"
+            className="text-[#525252] font-semibold text-sm hover:text-[#df00c1] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md px-2 py-1"
+          >
+            Sign In
+          </a>
+          <button className="bg-[#290747] text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 hover:bg-[#df00c1] hover:shadow-[0_4px_15px_rgba(223,0,193,0.3)] focus:ring-4 focus:ring-[#df00c1]/50 focus:outline-none">
+            Let's Talk
+          </button>
         </div>
-      )}
+
+        {/* MOBILE MENU TOGGLE (Hamburger) */}
+        <button
+          className="md:hidden p-2 text-[#525252] hover:text-[#df00c1] focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md"
+          aria-label="Open Mobile Menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+
+      </div>
     </header>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;
