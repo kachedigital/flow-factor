@@ -43,7 +43,7 @@ export function Navbar() {
             <a
               key={item}
               href={`/${item.toLowerCase()}`}
-              className="text-[#161616] font-semibold text-sm uppercase tracking-wider hover:text-[#df00c1] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md px-2 py-1"
+              className="text-[#290747] font-semibold text-sm uppercase tracking-wider hover:text-[#df00c1] transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md px-2 py-1"
             >
               {item}
             </a>
@@ -59,7 +59,7 @@ export function Navbar() {
 
         {/* MOBILE MENU TOGGLE (Hamburger) */}
         <button
-          className="md:hidden p-2 text-[#161616] hover:text-[#df00c1] focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md"
+          className="md:hidden p-2 text-[#290747] hover:text-[#df00c1] focus-visible:ring-2 focus-visible:ring-[#df00c1] focus-visible:outline-none rounded-md"
           aria-label="Open Mobile Menu"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
