@@ -18,8 +18,8 @@ export default function RefinedHero() {
                     repeat: Infinity,
                     ease: "easeInOut"
                 }}
-                // Positioned absolutely on the right to anchor, not overwhelm.
-                className="absolute right-[-15%] md:right-[-10%] top-[10%] z-0 w-[140%] md:w-[75vw] pointer-events-none drop-shadow-3xl"
+                // Positioned absolutely on the right to flow from the Navbar down.
+                className="absolute right-[-20%] md:right-[-15%] top-[-10%] z-0 w-[150%] md:w-[85vw] pointer-events-none drop-shadow-3xl"
             >
                 <img
                     src="/3d-ribbon-transparent.png" // Asset Image 36
